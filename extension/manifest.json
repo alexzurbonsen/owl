@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Parrot",
+  "version": "0.1.0",
+  "description": "Pause before sending to watched email addresses. Private, local, and exact-match only.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "parrot@parrot.local",
+      "strict_min_version": "137.0"
+    }
+  },
+  "permissions": [
+    "compose",
+    "storage"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "48": "icons/parrot.svg",
+    "96": "icons/parrot.svg"
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+  }
+}

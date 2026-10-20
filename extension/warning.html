@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parrot · Review recipients</title>
+  <link rel="icon" href="icons/parrot.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="ui.css">
+  <script type="module" src="warning.js"></script>
+</head>
+<body class="warning-page">
+  <main class="warning-shell">
+    <header class="brand"><img src="icons/parrot.svg" width="38" height="38" alt=""><span>parrot<span class="brand-note">A little pause before Send.</span></span></header>
+    <div class="warning-heading"><span id="warning-symbol" class="warning-symbol" aria-hidden="true">↗</span><p id="warning-eyebrow" class="eyebrow">ONE LAST LOOK</p><h1 id="warning-title">Checking recipients…</h1><p id="warning-description" class="lede" role="status">Keep this window open while Parrot prepares your confirmation.</p></div>
+    <ul id="matches" class="match-list" aria-label="Watched recipients" hidden></ul>
+    <div id="verification-error" class="notice error" hidden><strong>This message has not been verified.</strong><p id="error-reason"></p><p>Send only if you have checked the recipients yourself.</p></div>
+    <p id="warning-note" class="warning-note">Nothing is sent until you make a choice. Closing this window cancels sending.</p>
+    <footer class="warning-actions"><button id="cancel" class="secondary" type="button" autofocus>Cancel sending</button><button id="approve" class="primary" type="button" disabled>Send anyway</button></footer>
+    <p class="warning-footnote">Your decision applies only to this send attempt.</p>
+  </main>
+</body>
+</html>

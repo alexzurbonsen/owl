@@ -1,0 +1,17 @@
+{
+  "name": "parrot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A private, exact-address send confirmation for Thunderbird.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:ui": "playwright test",
+    "check": "npm test && npm run test:ui && npm run build",
+    "build": "python3 scripts/build.py"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "linkedom": "0.18.13"
+  }
+}
