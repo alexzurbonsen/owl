@@ -66,13 +66,15 @@ Only these permissions are requested:
 
 ## Development
 
-Requires Node.js **22+** and Python **3.9+**. The XPI build needs only Python, not npm packages.
+Uses **Bun 1.3.14** for dependency management and scripts, Node.js **22+** for the existing test runner, and Python **3.9+** for packaging. The XPI build needs only Python, not JavaScript dependencies.
 
 ```fish
-npm ci --ignore-scripts
-npm test
-npm run build
+bun install --frozen-lockfile --ignore-scripts
+bun run test
+bun run build
 ```
+
+Use `bun run test`, not `bun test`: the script intentionally runs the Node test runner. `bun.lock` pins development dependencies.
 
 The build includes only `extension/`. Development dependencies and tests are not shipped. Packaging uses sorted files and fixed ZIP timestamps for reproducible output.
 
@@ -81,15 +83,15 @@ The build includes only `extension/`. Development dependencies and tests are not
 The Playwright suite uses mocked Thunderbird APIs and the same CSP as the extension. It covers editing, validation, saving failures, warning decisions, malicious text, keyboard focus, and light/dark layouts. It is **not** a Thunderbird integration test.
 
 ```fish
-npx playwright install chromium
-npm run test:ui
+bun run playwright install chromium
+bun run test:ui
 ```
 
 Or select an already installed compatible Chromium browser:
 
 ```fish
 set -lx PARROT_BROWSER_PATH "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-npm run test:ui
+bun run test:ui
 ```
 
 Screenshots are saved under `test-results/` during the light/dark tests. Browser launch must be allowed by any outer OS sandbox; changing Parrot cannot fix a denied browser launch.
@@ -126,7 +128,7 @@ Use a disposable/test profile and recipient addresses you control. Never use rea
 
 ## Verification status
 
-- Logic, security, popup-lifecycle, and DOM tests: passing (see current `npm test` output).
+- Logic, security, popup-lifecycle, and DOM tests: passing (see current `bun run test` output).
 - Reproducible XPI build: passing.
 - Browser UI suite: written, but execution in the initial development session was blocked by the outer nono sandbox before Chrome could load a page. No rendered screenshots were verified.
 - Installed Thunderbird send-hook behavior: **not yet tested**.
