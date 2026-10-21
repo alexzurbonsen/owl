@@ -33,6 +33,9 @@ async function page(name, api) {
 test('settings DOM: explicit save, deduplication, validation and removal', async () => {
   let watchlist = [], writes = [];
   const p = await page('options', { storage: { local: { get: async () => ({ watchlist }), set: async data => { watchlist = data.watchlist; writes.push(data); } } } });
+  assert.equal(p.document.title, 'Owl · Watched addresses');
+  assert.equal(p.document.querySelector('.brand-logo').textContent, '🦉');
+  assert.equal(p.document.querySelector('.brand-note').textContent, 'Are you sure?');
   const input = p.document.querySelector('#addresses');
   input.value = 'Jane@Example.com; all-staff@company.com; jane@example.com';
   p.event('#addresses', 'input');
@@ -83,9 +86,17 @@ test('warning DOM: addresses are text; send requires an explicit click', async (
   const decisions = [];
   const malicious = '<img src=https://example.invalid/track>';
   const p = await page('warning', { runtime: { sendMessage: async message => {
-    if (message.type === 'parrot:warning') return { kind: 'match', matches: [{ field: 'bcc', address: malicious }] };
+    if (message.type === 'owl:warning') return { kind: 'match', matches: [{ field: 'bcc', address: malicious }] };
     decisions.push(message); return { accepted: true };
   } } });
+  assert.equal(p.document.querySelector('#warning-title').textContent, 'Are you sure?');
+  assert.equal(p.document.querySelector('#warning-description').textContent, 'You’re about to send to this watched address.');
+  assert.equal(p.document.querySelector('.warning-symbol').textContent, '🦉');
+  assert.equal(p.document.querySelector('.brand'), null);
+  assert.equal(p.document.querySelector('.eyebrow'), null);
+  assert.equal(p.document.querySelector('[role=dialog]').getAttribute('aria-labelledby'), 'warning-title');
+  assert.equal(p.document.querySelector('.warning-notes').nextElementSibling.className, 'warning-actions');
+  assert.match(p.document.querySelector('.warning-notes').textContent, /Your decision applies only to this send attempt/);
   assert.equal(p.document.querySelector('#matches').textContent, 'bcc' + malicious);
   assert.equal(p.document.querySelector('#matches img'), null);
   assert.equal(decisions.length, 0);
@@ -98,7 +109,7 @@ test('warning DOM: addresses are text; send requires an explicit click', async (
 test('warning DOM: failure is visibly different and Cancel sends false', async () => {
   const decisions = [];
   const p = await page('warning', { runtime: { sendMessage: async message => {
-    if (message.type === 'parrot:warning') return { kind: 'error', reason: 'Settings unavailable' };
+    if (message.type === 'owl:warning') return { kind: 'error', reason: 'Settings unavailable' };
     decisions.push(message); return { accepted: true };
   } } });
   assert.equal(p.document.querySelector('#warning-title').textContent, 'Recipients could not be verified');

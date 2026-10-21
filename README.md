@@ -1,8 +1,8 @@
-# Parrot
+# Owl
 
-**A little pause before Send.** A small Thunderbird extension that asks before sending to watched email addresses.
+**Are you sure?** A small Thunderbird extension that asks before sending to watched email addresses.
 
-Parrot is a fresh implementation, not a fork. It has no shipped third-party libraries, build framework, native helper, or external services.
+Owl is a fresh implementation, not a fork. It has no shipped third-party libraries, build framework, native helper, or external services. Its logo is the native 🦉 emoji; its exact appearance depends on your operating system’s emoji font. Blue-gray light/dark themes keep it at home in Thunderbird.
 
 ## Behavior
 
@@ -24,7 +24,7 @@ The watchlist accepts ordinary unquoted addresses, including international chara
 
 ### Limits
 
-This is an accident-prevention tool, not enforceable data-loss prevention. You can override it or disable it. Thunderbird must successfully load and invoke the extension for it to protect a send. Other extensions or server-side forwarding may change the ultimate delivery; Parrot checks only the recipients Thunderbird supplies at its send hook.
+This is an accident-prevention tool, not enforceable data-loss prevention. You can override it or disable it. Thunderbird must successfully load and invoke the extension for it to protect a send. Other extensions or server-side forwarding may change the ultimate delivery; Owl checks only the recipients Thunderbird supplies at its send hook.
 
 **Send Later:** verification happens when the message is queued, not again when an already-queued message leaves the Outbox.
 
@@ -34,16 +34,16 @@ Warnings are separate popup windows, not operating-system modal dialogs. The sen
 
 Targets Thunderbird **137 and newer**, using its native mailbox parser (your previously checked 156.0.1 installation meets this requirement). Real Thunderbird integration still requires the manual checks below; the automated tests mock its APIs.
 
-The built package is `dist/parrot-0.1.0.xpi`.
+The built package is `dist/owl-0.1.1.xpi`. Owl was previously named Parrot. Its internal extension ID remains `parrot@parrot.local` so installing this build over Parrot keeps the saved watchlist; the directory can be renamed independently.
 
 1. Open Thunderbird → **Add-ons and Themes**.
 2. Choose the gear menu → **Install Add-on From File…**.
 3. Select the XPI and grant the two listed permissions.
-4. Open Parrot's preferences, add full addresses, and click **Save changes**.
+4. Open Owl's preferences, add full addresses, and click **Save changes**.
 
 Alternatively, use Thunderbird's add-on debugging page and **Load Temporary Add-on**, selecting `extension/manifest.json`. Temporary installations must be reloaded after restarting Thunderbird.
 
-**First test with an address you control.** Add it to the watchlist, send a harmless test message, and verify that cancelling prevents the send before relying on Parrot for sensitive mail. If testing against an existing guard add-on, disable the other guard first so its warning does not obscure which extension is responsible.
+**First test with an address you control.** Add it to the watchlist, send a harmless test message, and verify that cancelling prevents the send before relying on Owl for sensitive mail. If testing against an existing guard add-on, disable the other guard first so its warning does not obscure which extension is responsible.
 
 ## Privacy and security
 
@@ -57,8 +57,8 @@ Only these permissions are requested:
 - No downloads, account enumeration, address-book, clipboard, native-messaging, or host permissions.
 - No telemetry, exports/imports, sync storage, remote fonts, or network requests.
 - A restrictive content-security policy blocks network connections and nonlocal resources.
-- Only the watchlist is persisted. It is **not encrypted by Parrot** and may appear in profile backups.
-- Email bodies, subjects, sender identities, and attachments are not used, persisted, or logged by Parrot. Thunderbird still supplies compose details to the hook under the `compose` permission.
+- Only the watchlist is persisted. It is **not encrypted by Owl** and may appear in profile backups.
+- Email bodies, subjects, sender identities, and attachments are not used, persisted, or logged by Owl. Thunderbird still supplies compose details to the hook under the `compose` permission.
 - The warning URL contains a random token, never recipient data. The background page keeps matched addresses only for the pending decision, and releases them afterward.
 - Warning-data requests and decisions must come from the matching extension popup window and URL.
 - All data-dependent UI uses text nodes, not HTML interpretation.
@@ -90,11 +90,11 @@ bun run test:ui
 Or select an already installed compatible Chromium browser:
 
 ```fish
-set -lx PARROT_BROWSER_PATH "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+set -lx OWL_BROWSER_PATH "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 bun run test:ui
 ```
 
-Screenshots are saved under `test-results/` during the light/dark tests. Browser launch must be allowed by any outer OS sandbox; changing Parrot cannot fix a denied browser launch.
+Screenshots are saved under `test-results/` during the light/dark tests. Browser launch must be allowed by any outer OS sandbox; changing Owl cannot fix a denied browser launch.
 
 ### Source map
 
@@ -115,7 +115,7 @@ Use a disposable/test profile and recipient addresses you control. Never use rea
 
 - [ ] Install the XPI and confirm only `compose` and `storage` are requested.
 - [ ] Add/save an address, restart Thunderbird, and confirm it remains saved.
-- [ ] Send an unmatched address: no Parrot interruption.
+- [ ] Send an unmatched address: no Owl interruption.
 - [ ] Test a watched address separately in To, Cc, and Bcc, including mixed-case and display-name formatting.
 - [ ] Confirm Cancel, Escape, and closing the popup keep the message unsent and editable.
 - [ ] Confirm Send anyway allows exactly that attempt; a later attempt prompts again.

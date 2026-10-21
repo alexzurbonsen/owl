@@ -3,7 +3,7 @@ import { normalizeAddress } from './addresses.js';
 export const WATCHLIST_KEY = 'watchlist';
 
 export function validateWatchlist(value) {
-  if (!Array.isArray(value)) throw new Error('The saved watchlist is invalid. Open Parrot settings to repair it.');
+  if (!Array.isArray(value)) throw new Error('The saved watchlist is invalid. Open Owl settings to repair it.');
   return [...new Set(value.map(normalizeAddress))].sort();
 }
 

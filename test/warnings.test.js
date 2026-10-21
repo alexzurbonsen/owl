@@ -29,11 +29,11 @@ test('popup URL contains only a token; warning data requires its own sender', as
   await tick();
   assert.equal(f.created[0].url, 'about:blank');
   assert.equal(f.updated[0].url, 'moz-extension://test/warning.html?token=token-1');
-  for (const sender of [{}, { ...f.sender(1), id: 'other' }, { ...f.sender(1), url: 'moz-extension://test/options.html' }, { ...f.sender(1), tab: { windowId: 9 } }]) await assert.rejects(f.api.runtime.onMessage.emit({ type: 'parrot:warning', token: 'token-1' }, sender));
-  assert.deepEqual(await f.api.runtime.onMessage.emit({ type: 'parrot:warning', token: 'token-1' }, f.sender(1)), warning);
-  await f.api.runtime.onMessage.emit({ type: 'parrot:decision', token: 'token-1', approved: true }, f.sender(1));
+  for (const sender of [{}, { ...f.sender(1), id: 'other' }, { ...f.sender(1), url: 'moz-extension://test/options.html' }, { ...f.sender(1), tab: { windowId: 9 } }]) await assert.rejects(f.api.runtime.onMessage.emit({ type: 'owl:warning', token: 'token-1' }, sender));
+  assert.deepEqual(await f.api.runtime.onMessage.emit({ type: 'owl:warning', token: 'token-1' }, f.sender(1)), warning);
+  await f.api.runtime.onMessage.emit({ type: 'owl:decision', token: 'token-1', approved: true }, f.sender(1));
   assert.equal(await result, true);
-  await assert.rejects(f.api.runtime.onMessage.emit({ type: 'parrot:warning', token: 'token-1' }, f.sender(1)));
+  await assert.rejects(f.api.runtime.onMessage.emit({ type: 'owl:warning', token: 'token-1' }, f.sender(1)));
 });
 
 test('closing popup cancels', async () => {
@@ -81,14 +81,14 @@ test('parallel compose windows cannot approve each other', async () => {
   const f = fixture();
   const first = f.ask({ id: 50 }, warning); await tick();
   const second = f.ask({ id: 60 }, { kind: 'error', reason: 'Test failure' }); await tick();
-  await assert.rejects(f.api.runtime.onMessage.emit({ type: 'parrot:decision', token: 'token-1', approved: true }, f.sender(2)));
-  await f.api.runtime.onMessage.emit({ type: 'parrot:decision', token: 'token-2', approved: true }, f.sender(2));
+  await assert.rejects(f.api.runtime.onMessage.emit({ type: 'owl:decision', token: 'token-1', approved: true }, f.sender(2)));
+  await f.api.runtime.onMessage.emit({ type: 'owl:decision', token: 'token-2', approved: true }, f.sender(2));
   f.api.windows.onRemoved.emit(1);
   assert.equal(await first, false); assert.equal(await second, true);
 });
 
 test('malformed decisions cannot approve', async () => {
   const f = fixture(); const result = f.ask({ id: 50 }, warning); await tick();
-  await assert.rejects(f.api.runtime.onMessage.emit({ type: 'parrot:decision', token: 'token-1', approved: 'yes' }, f.sender(1)));
+  await assert.rejects(f.api.runtime.onMessage.emit({ type: 'owl:decision', token: 'token-1', approved: 'yes' }, f.sender(1)));
   f.api.windows.onRemoved.emit(1); assert.equal(await result, false);
 });

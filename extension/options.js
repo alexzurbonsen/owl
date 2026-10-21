@@ -91,7 +91,7 @@ document.querySelector('#add-form').addEventListener('submit', event => {
 
 saveButton.addEventListener('click', async () => {
   if (saveButton.disabled) return;
-  if (draft.length === 0 && !window.confirm('Save an empty watchlist? Parrot will no longer warn about matched addresses.')) return;
+  if (draft.length === 0 && !window.confirm('Save an empty watchlist? Owl will no longer warn about matched addresses.')) return;
   saving = true;
   updateControls();
   status.textContent = 'Saving…';
@@ -111,7 +111,7 @@ saveButton.addEventListener('click', async () => {
 
 document.querySelector('#retry').addEventListener('click', load);
 document.querySelector('#reset').addEventListener('click', async () => {
-  if (!window.confirm('Clear the saved watchlist? This removes every watched address. Parrot will not warn about matched addresses until you add and save new ones.')) return;
+  if (!window.confirm('Clear the saved watchlist? This removes every watched address. Owl will not warn about matched addresses until you add and save new ones.')) return;
   try {
     await saveWatchlist(api.storage.local, []);
     await load();

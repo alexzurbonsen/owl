@@ -10,7 +10,7 @@ export function createWarnings(api, makeId) {
     pending.delete(token);
     entry.resolve(approved);
     if (entry.windowId !== null) {
-      api.windows.remove(entry.windowId).catch(error => console.error('Parrot could not close a completed warning.', error));
+      api.windows.remove(entry.windowId).catch(error => console.error('Owl could not close a completed warning.', error));
     }
   }
 
@@ -23,10 +23,10 @@ export function createWarnings(api, makeId) {
   }
 
   api.runtime.onMessage.addListener((message, sender) => {
-    if (!['parrot:warning', 'parrot:decision'].includes(message?.type)) return undefined;
+    if (!['owl:warning', 'owl:decision'].includes(message?.type)) return undefined;
     const entry = trustedEntry(message, sender);
     if (!entry) return Promise.reject(new Error('This warning is no longer active. Sending was not approved.'));
-    if (message.type === 'parrot:warning') return Promise.resolve(entry.warning);
+    if (message.type === 'owl:warning') return Promise.resolve(entry.warning);
     if (typeof message.approved !== 'boolean') return Promise.reject(new Error('Invalid warning decision.'));
     finish(message.token, message.approved);
     return Promise.resolve({ accepted: true });
@@ -55,11 +55,11 @@ export function createWarnings(api, makeId) {
     try {
       // about:blank is a deliberate handshake: establish the popup's identity
       // before its page can request sensitive data or return a decision.
-      const popup = await api.windows.create({ type: 'popup', url: 'about:blank', width: 580, height: 570 });
+      const popup = await api.windows.create({ type: 'popup', url: 'about:blank', width: 520, height: 440 });
       if (Number.isInteger(popup.id)) entry.windowId = popup.id;
       if (entry.windowId === null || !Number.isInteger(popup.tabs?.[0]?.id)) throw new Error('Could not create a warning window.');
       if (!pending.has(token) || closedWindows.has(popup.id)) {
-        api.windows.remove(popup.id).catch(error => console.error('Parrot could not close a cancelled warning.', error));
+        api.windows.remove(popup.id).catch(error => console.error('Owl could not close a cancelled warning.', error));
         finish(token, false);
       } else {
         await api.tabs.update(popup.tabs[0].id, { url: api.runtime.getURL('warning.html') + '?token=' + token });

@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "parrot",
+      "name": "owl",
       "devDependencies": {
         "@playwright/test": "1.64.1",
         "linkedom": "0.18.13",

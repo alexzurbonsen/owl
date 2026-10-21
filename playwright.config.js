@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
-const executablePath = process.env.PARROT_BROWSER_PATH;
+const executablePath = process.env.OWL_BROWSER_PATH;
 
 export default defineConfig({
   testDir: './test/ui',

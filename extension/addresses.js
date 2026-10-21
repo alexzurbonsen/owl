@@ -3,7 +3,7 @@ export function normalizeAddress(value) {
   if (typeof value !== 'string') throw new Error('Enter a full email address.');
   const address = value.trim().toLowerCase();
   // Accept ordinary and international addresses, including single-label domains.
-  // Quoted local parts and domain literals are outside Parrot's supported syntax.
+  // Quoted local parts and domain literals are outside Owl's supported syntax.
   if (address.length > 254 || !/^[^\s@<>(),;:"\[\]\\]+@[^\s@<>(),;:"\[\]\\]+$/u.test(address)) {
     throw new Error('Use a full address, such as jane@example.com (no display names or patterns).');
   }

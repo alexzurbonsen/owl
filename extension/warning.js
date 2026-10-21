@@ -10,7 +10,7 @@ function unavailable() {
   approve.disabled = true;
   cancel.disabled = false;
   document.querySelector('#warning-title').textContent = 'No approval was given';
-  description.textContent = 'Parrot could not complete this warning. Close this window to cancel sending, then try again.';
+  description.textContent = 'Owl could not complete this warning. Close this window to cancel sending, then try again.';
   cancel.textContent = 'Close and cancel';
 }
 
@@ -21,7 +21,7 @@ async function decide(approved) {
   cancel.disabled = true;
   approve.disabled = true;
   try {
-    const response = await messenger.runtime.sendMessage({ type: 'parrot:decision', token, approved });
+    const response = await messenger.runtime.sendMessage({ type: 'owl:decision', token, approved });
     if (response?.accepted !== true) throw new Error('No acknowledgement.');
     window.close();
   } catch {
@@ -39,11 +39,12 @@ window.addEventListener('keydown', event => {
 async function initialize() {
   try {
     if (!token) throw new Error('Missing warning token.');
-    const warning = await messenger.runtime.sendMessage({ type: 'parrot:warning', token });
+    const warning = await messenger.runtime.sendMessage({ type: 'owl:warning', token });
     if (warning?.kind === 'match' && Array.isArray(warning.matches) && warning.matches.length > 0) {
-      document.querySelector('#warning-title').textContent = 'The right people?';
-      const count = warning.matches.length;
-      description.textContent = 'This message includes ' + count + ' watched ' + (count === 1 ? 'recipient' : 'recipients') + '. Check that you intend to include ' + (count === 1 ? 'this address.' : 'these addresses.');
+      document.querySelector('#warning-title').textContent = 'Are you sure?';
+      description.textContent = warning.matches.length === 1
+        ? 'You’re about to send to this watched address.'
+        : 'You’re about to send to these watched addresses.';
       const list = document.querySelector('#matches');
       for (const match of warning.matches) {
         const li = document.createElement('li');
@@ -59,17 +60,15 @@ async function initialize() {
       list.hidden = false;
     } else if (warning?.kind === 'error') {
       document.body.classList.add('verification-failed');
-      document.querySelector('#warning-symbol').textContent = '!';
-      document.querySelector('#warning-eyebrow').textContent = 'CHECK INTERRUPTED';
       document.querySelector('#warning-title').textContent = 'Recipients could not be verified';
-      description.textContent = 'The recipient check did not finish. This is not a successful check or a matched-address confirmation.';
+      description.textContent = 'The recipient check did not finish.';
       document.querySelector('#error-reason').textContent = warning.reason;
       document.querySelector('#verification-error').hidden = false;
       approve.textContent = 'Send without verification';
     } else {
       throw new Error('Invalid warning data.');
     }
-    document.title = 'Parrot · ' + document.querySelector('#warning-title').textContent;
+    document.title = document.querySelector('#warning-title').textContent;
     active = true;
     approve.disabled = false;
     cancel.focus();
