@@ -8,7 +8,7 @@ source = root / "extension"
 manifest = json.loads((source / "manifest.json").read_text())
 assert manifest["permissions"] == ["compose", "storage"]
 assert manifest["version"] == json.loads((root / "package.json").read_text())["version"]
-out = root / "dist" / f"owl-{manifest['version']}.xpi"
+out = root / "dist" / "owl.xpi"
 out.parent.mkdir(exist_ok=True)
 with ZipFile(out, "w", compression=ZIP_DEFLATED) as archive:
     for file in sorted(source.rglob("*")):

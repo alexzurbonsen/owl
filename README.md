@@ -35,14 +35,14 @@ Warnings are separate popup windows, not operating-system modal dialogs. The sen
 
 Targets Thunderbird **137 and newer**, using its native mailbox parser (your previously checked 156.0.1 installation meets this requirement). Real Thunderbird integration still requires the manual checks below; the automated tests mock its APIs.
 
-The built package is `dist/owl-0.1.1.xpi`, with extension ID `owl@owl.local`. This is a new identity: saved watchlists from builds using the old ID do not transfer. Copy any addresses you want to keep before removing the previous installation, then disable or remove it to avoid duplicate warnings. Re-enter and save your addresses in Owl. Future updates using this ID retain the watchlist; the project directory can be renamed independently.
+The built package is always `dist/owl.xpi`, with extension ID `owl@owl.local`. Each build replaces that same file; the release version lives inside the manifest, not in the filename. This is a new identity: saved watchlists from builds using the old ID do not transfer. Copy any addresses you want to keep before removing the previous installation, then disable or remove it to avoid duplicate warnings. Re-enter and save your addresses in Owl. Future updates using this ID retain the watchlist; the project directory can be renamed independently.
 
 1. Open Thunderbird → **Add-ons and Themes**.
 2. Choose the gear menu → **Install Add-on From File…**.
 3. Select the XPI and grant the two listed permissions.
 4. Open Owl's preferences, add full addresses, and click **Save changes**.
 
-Alternatively, use Thunderbird's add-on debugging page and **Load Temporary Add-on**, selecting `extension/manifest.json`. Temporary installations must be reloaded after restarting Thunderbird.
+For development, use Thunderbird's add-on debugging page and **Load Temporary Add-on**, selecting `dist/owl.xpi`. After rebuilding, click **Reload** on that temporary add-on; the file path stays the same. You can also load `extension/manifest.json` directly and reload source changes without packaging. Temporary installations must be reloaded after restarting Thunderbird.
 
 **First test with an address you control.** Add it to the watchlist, send a harmless test message, and verify that cancelling prevents the send before relying on Owl for sensitive mail. If testing against an existing guard add-on, disable the other guard first so its warning does not obscure which extension is responsible.
 
