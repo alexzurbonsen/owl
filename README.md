@@ -2,8 +2,6 @@
 
 **Are you sure?** A small Thunderbird extension that asks before sending to watched email addresses.
 
-Owl is a fresh implementation, not a fork. It has no shipped third-party libraries, build framework, native helper, or external services. Its logo is the native 🦉 emoji; its exact appearance depends on your operating system’s emoji font. Blue-gray light/dark themes keep it at home in Thunderbird.
-
 ## Behavior
 
 - One global watchlist for all sending accounts. Adding or removing an address saves immediately; typing alone does not. Failed writes leave the saved list unchanged and show an error. Removing the last address requires confirmation.
@@ -109,28 +107,3 @@ Screenshots are saved under `test-results/` during the light/dark tests. Browser
 | `extension/options.*` | Watchlist settings UI. |
 | `extension/warning.*` | Confirmation and error UI. |
 | `test/` | Logic, security, popup-lifecycle, and DOM tests; browser tests in `test/ui/`. |
-
-## Manual verification before relying on it
-
-Use a disposable/test profile and recipient addresses you control. Never use real sensitive recipients just to test the warning.
-
-- [ ] Install the XPI and confirm only `compose` and `storage` are requested.
-- [ ] Add an address, wait for “Saved on this device”, restart Thunderbird, and confirm it remains saved. Remove it, confirm the last-address warning, and verify that the removal persists.
-- [ ] Send an unmatched address: no Owl interruption.
-- [ ] Test a watched address separately in To, Cc, and Bcc, including mixed-case and display-name formatting.
-- [ ] Confirm Cancel, Escape, and closing the popup keep the message unsent and editable.
-- [ ] Without the add-on debugger open, leave a warning idle for at least three minutes (past the reported 132-second failure), then click Cancel: the popup should close and the message should remain unsent and editable. Repeat with Send anyway on a harmless message to an address you control.
-- [ ] Confirm Send anyway allows exactly that attempt; a later attempt prompts again.
-- [ ] Repeat from a second account: the same global watchlist applies.
-- [ ] Test simultaneous compose windows: each warning belongs to its own send.
-- [ ] Test Send Later: cancelling does not queue the message; approval does.
-- [ ] Test an address-book list: expect an incomplete-verification warning if Thunderbird supplies a nonliteral list.
-- [ ] In add-on debugging, temporarily change the saved `watchlist` to an invalid value: expect the verification-failed warning, then repair it in settings. Only Send without verification may override the failure.
-- [ ] Check both light/dark themes, keyboard navigation, and the popup at a small screen size.
-
-## Verification status
-
-- Logic, security, popup-lifecycle, and DOM tests: passing (see current `bun run test` output).
-- Reproducible XPI build: passing.
-- Browser UI suite: written, but execution in the initial development session was blocked by the outer nono sandbox before Chrome could load a page. No rendered screenshots were verified.
-- Delayed Cancel: the user observed the Manifest V3 background becoming inactive while a warning was pending. Owl now uses an explicitly persistent Manifest V2 background. The manifest regression test passes; the three-minute Thunderbird retest is **still required**.
