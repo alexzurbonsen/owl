@@ -124,3 +124,17 @@ test('warning DOM: failed warning load never enables sending', async () => {
   assert.equal(p.document.querySelector('#approve').disabled, true);
   assert.equal(p.document.querySelector('#warning-title').textContent, 'No approval was given');
 });
+
+test('a genuinely stale warning cannot approve sending and keeps cancellation available', async () => {
+  const address = 'sensitive@example.com';
+  const p = await page('warning', { runtime: { sendMessage: async message => {
+    if (message.type === 'owl:warning') return { kind: 'match', matches: [{ field: 'to', address }] };
+    throw new Error('This warning is no longer active. Sending was not approved.');
+  } } });
+  await p.click('#cancel');
+  assert.equal(p.document.querySelector('#cancel').textContent, 'Close and cancel');
+  assert.equal(p.document.querySelector('#cancel').disabled, false);
+  assert.equal(p.document.querySelector('#approve').disabled, true);
+  await p.click('#cancel');
+  assert.equal(p.closed(), 1);
+});

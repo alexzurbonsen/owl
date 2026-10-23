@@ -6,9 +6,18 @@ const root = new URL('../extension/', import.meta.url);
 test('manifest has only compose and local-storage permission; network is blocked', async () => {
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root)));
   assert.deepEqual(manifest.permissions, ['compose', 'storage']);
-  assert.match(manifest.content_security_policy.extension_pages, /connect-src 'none'/);
+  assert.equal(typeof manifest.content_security_policy, 'string');
+  assert.match(manifest.content_security_policy, /connect-src 'none'/);
   assert.equal(manifest.host_permissions, undefined);
   assert.equal(manifest.web_accessible_resources, undefined);
+});
+
+test('pending send decisions use an explicitly persistent Manifest V2 background', async () => {
+  const manifest = JSON.parse(await readFile(new URL('manifest.json', root)));
+  assert.equal(manifest.manifest_version, 2);
+  assert.equal(manifest.background.persistent, true);
+  assert.equal(manifest.background.type, 'module');
+  assert.deepEqual(manifest.background.scripts, ['background.js']);
 });
 
 test('shipped scripts have no HTML injection, telemetry, remote code, or sync storage', async () => {

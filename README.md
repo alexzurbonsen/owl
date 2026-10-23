@@ -14,6 +14,7 @@ Owl is a fresh implementation, not a fork. It has no shipped third-party librari
 - Cancel is focused by default. Closing a warning or pressing Escape cancels.
 - If the warning cannot be created or navigated, sending is cancelled. If its page fails to load, no approval is given: close the failed or blank warning window to cancel.
 - Each approval applies only to that send attempt. No remembered approvals.
+- Uses a persistent Manifest V2 background so Thunderbird does not idle-unload pending warning decisions. Reloading, disabling, or updating the extension still interrupts active warnings; close them and start a new send attempt afterward.
 - An intentionally empty watchlist does not interrupt sending.
 
 ### Mailing lists and supported addresses
@@ -118,6 +119,7 @@ Use a disposable/test profile and recipient addresses you control. Never use rea
 - [ ] Send an unmatched address: no Owl interruption.
 - [ ] Test a watched address separately in To, Cc, and Bcc, including mixed-case and display-name formatting.
 - [ ] Confirm Cancel, Escape, and closing the popup keep the message unsent and editable.
+- [ ] Without the add-on debugger open, leave a warning idle for at least three minutes (past the reported 132-second failure), then click Cancel: the popup should close and the message should remain unsent and editable. Repeat with Send anyway on a harmless message to an address you control.
 - [ ] Confirm Send anyway allows exactly that attempt; a later attempt prompts again.
 - [ ] Repeat from a second account: the same global watchlist applies.
 - [ ] Test simultaneous compose windows: each warning belongs to its own send.
@@ -131,4 +133,4 @@ Use a disposable/test profile and recipient addresses you control. Never use rea
 - Logic, security, popup-lifecycle, and DOM tests: passing (see current `bun run test` output).
 - Reproducible XPI build: passing.
 - Browser UI suite: written, but execution in the initial development session was blocked by the outer nono sandbox before Chrome could load a page. No rendered screenshots were verified.
-- Installed Thunderbird send-hook behavior: **not yet tested**.
+- Delayed Cancel: the user observed the Manifest V3 background becoming inactive while a warning was pending. Owl now uses an explicitly persistent Manifest V2 background. The manifest regression test passes; the three-minute Thunderbird retest is **still required**.

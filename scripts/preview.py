@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 root = Path(__file__).resolve().parent.parent / "extension"
-csp = json.loads((root / "manifest.json").read_text())["content_security_policy"]["extension_pages"]
+csp = json.loads((root / "manifest.json").read_text())["content_security_policy"]
 
 class Handler(SimpleHTTPRequestHandler):
     def end_headers(self):

@@ -11,5 +11,5 @@ const check = createSendCheck({
   reportError: () => console.error('Owl could not complete recipient verification. Sending requires an explicit override, or is cancelled if no warning can be shown.')
 });
 
-// Register at module load so Thunderbird can wake an MV3 event page on Send.
+// Manifest V2 keeps this background alive while a send awaits its popup decision.
 api.compose.onBeforeSend.addListener(check);

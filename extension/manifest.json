@@ -1,5 +1,5 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Owl",
   "version": "0.1.1",
   "description": "Pause before sending to watched email addresses. Private, local, and exact-match only.",
@@ -17,17 +17,17 @@
     "scripts": [
       "background.js"
     ],
-    "type": "module"
+    "type": "module",
+    "persistent": true
   },
   "options_ui": {
     "page": "options.html",
-    "open_in_tab": true
+    "open_in_tab": true,
+    "browser_style": false
   },
   "icons": {
     "48": "icons/owl.svg",
     "96": "icons/owl.svg"
   },
-  "content_security_policy": {
-    "extension_pages": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
-  }
+  "content_security_policy": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
 }
