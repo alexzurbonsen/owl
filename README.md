@@ -107,3 +107,7 @@ Screenshots are saved under `test-results/` during the light/dark tests. Browser
 | `extension/options.*` | Watchlist settings UI. |
 | `extension/warning.*` | Confirmation and error UI. |
 | `test/` | Logic, security, popup-lifecycle, and DOM tests; browser tests in `test/ui/`. |
+
+## License
+
+Owl is licensed under the [Apache License, Version 2.0](LICENSE).
