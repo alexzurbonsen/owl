@@ -5,7 +5,7 @@
   "description": "Pause before sending to watched email addresses. Private, local, and exact-match only.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "parrot@parrot.local",
+      "id": "owl@owl.local",
       "strict_min_version": "137.0"
     }
   },

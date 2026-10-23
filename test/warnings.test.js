@@ -10,7 +10,7 @@ function fixture(overrides = {}) {
   let id = 0;
   const created = [], updated = [], removed = [];
   const api = {
-    runtime: { id: 'parrot@parrot.local', getURL: path => 'moz-extension://test/' + path, onMessage: event() },
+    runtime: { id: 'owl@owl.local', getURL: path => 'moz-extension://test/' + path, onMessage: event() },
     windows: { onRemoved: event(), create: async info => { created.push(info); const windowId = ++id; return { id: windowId, tabs: [{ id: windowId + 10 }] }; }, remove: async windowId => { removed.push(windowId); } },
     tabs: { onRemoved: event(), update: async (tabId, info) => { updated.push({ tabId, ...info }); } }
   };

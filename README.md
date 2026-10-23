@@ -35,7 +35,7 @@ Warnings are separate popup windows, not operating-system modal dialogs. The sen
 
 Targets Thunderbird **137 and newer**, using its native mailbox parser (your previously checked 156.0.1 installation meets this requirement). Real Thunderbird integration still requires the manual checks below; the automated tests mock its APIs.
 
-The built package is `dist/owl-0.1.1.xpi`. Owl was previously named Parrot. Its internal extension ID remains `parrot@parrot.local` so installing this build over Parrot keeps the saved watchlist; the directory can be renamed independently.
+The built package is `dist/owl-0.1.1.xpi`, with extension ID `owl@owl.local`. This is a new identity: saved watchlists from builds using the old ID do not transfer. Copy any addresses you want to keep before removing the previous installation, then disable or remove it to avoid duplicate warnings. Re-enter and save your addresses in Owl. Future updates using this ID retain the watchlist; the project directory can be renamed independently.
 
 1. Open Thunderbird → **Add-ons and Themes**.
 2. Choose the gear menu → **Install Add-on From File…**.

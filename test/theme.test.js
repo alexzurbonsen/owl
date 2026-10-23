@@ -27,11 +27,11 @@ test('light and dark theme text meets WCAG AA contrast against its surfaces', as
   }
 });
 
-test('Owl identity preserves existing watchlists and ships the emoji icon', async () => {
+test('Owl uses its own extension ID and ships the emoji icon', async () => {
   const root = new URL('../extension/', import.meta.url);
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
   assert.equal(manifest.name, 'Owl');
-  assert.equal(manifest.browser_specific_settings.gecko.id, 'parrot@parrot.local');
+  assert.equal(manifest.browser_specific_settings.gecko.id, 'owl@owl.local');
   for (const file of Object.values(manifest.icons)) {
     assert.match(await readFile(new URL(file, root), 'utf8'), /🦉/u);
   }
