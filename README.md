@@ -6,7 +6,7 @@ Owl is a fresh implementation, not a fork. It has no shipped third-party librari
 
 ## Behavior
 
-- One global watchlist for all sending accounts.
+- One global watchlist for all sending accounts. Adding or removing an address saves immediately; typing alone does not. Failed writes leave the saved list unchanged and show an error. Removing the last address requires confirmation.
 - Checks **To, Cc, and Bcc**, including display-name forms such as `Jane <jane@example.com>`.
 - Matches complete addresses after trimming surrounding whitespace and lowercasing. No domains, wildcards, substring matching, plus-address stripping, or dot normalization.
 - Watched recipient → **Cancel sending** or **Send anyway**.
@@ -35,12 +35,12 @@ Warnings are separate popup windows, not operating-system modal dialogs. The sen
 
 Targets Thunderbird **137 and newer**, using its native mailbox parser (your previously checked 156.0.1 installation meets this requirement). Real Thunderbird integration still requires the manual checks below; the automated tests mock its APIs.
 
-The built package is always `dist/owl.xpi`, with extension ID `owl@owl.local`. Each build replaces that same file; the release version lives inside the manifest, not in the filename. This is a new identity: saved watchlists from builds using the old ID do not transfer. Copy any addresses you want to keep before removing the previous installation, then disable or remove it to avoid duplicate warnings. Re-enter and save your addresses in Owl. Future updates using this ID retain the watchlist; the project directory can be renamed independently.
+The built package is always `dist/owl.xpi`, with extension ID `owl@owl.local`. Each build replaces that same file; the release version lives inside the manifest, not in the filename. This is a new identity: saved watchlists from builds using the old ID do not transfer. Copy any addresses you want to keep before removing the previous installation, then disable or remove it to avoid duplicate warnings. Re-enter your addresses in Owl; each Add action saves automatically. Future updates using this ID retain the watchlist; the project directory can be renamed independently.
 
 1. Open Thunderbird → **Add-ons and Themes**.
 2. Choose the gear menu → **Install Add-on From File…**.
 3. Select the XPI and grant the two listed permissions.
-4. Open Owl's preferences, add full addresses, and click **Save changes**.
+4. Open Owl's preferences and use **Add to list** to add full addresses. Additions and removals save automatically; there is no separate Save button.
 
 For development, use Thunderbird's add-on debugging page and **Load Temporary Add-on**, selecting `dist/owl.xpi`. After rebuilding, click **Reload** on that temporary add-on; the file path stays the same. You can also load `extension/manifest.json` directly and reload source changes without packaging. Temporary installations must be reloaded after restarting Thunderbird.
 
@@ -115,7 +115,7 @@ Screenshots are saved under `test-results/` during the light/dark tests. Browser
 Use a disposable/test profile and recipient addresses you control. Never use real sensitive recipients just to test the warning.
 
 - [ ] Install the XPI and confirm only `compose` and `storage` are requested.
-- [ ] Add/save an address, restart Thunderbird, and confirm it remains saved.
+- [ ] Add an address, wait for “Saved on this device”, restart Thunderbird, and confirm it remains saved. Remove it, confirm the last-address warning, and verify that the removal persists.
 - [ ] Send an unmatched address: no Owl interruption.
 - [ ] Test a watched address separately in To, Cc, and Bcc, including mixed-case and display-name formatting.
 - [ ] Confirm Cancel, Escape, and closing the popup keep the message unsent and editable.

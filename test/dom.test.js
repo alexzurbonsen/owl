@@ -9,14 +9,14 @@ import { loadWatchlist, saveWatchlist } from '../extension/watchlist.js';
 const root = new URL('../extension/', import.meta.url);
 const tick = () => new Promise(setImmediate);
 
-async function page(name, api) {
+async function page(name, api, { confirm = () => true } = {}) {
   const html = await readFile(new URL(name + '.html', root), 'utf8');
   const { window, document } = parseHTML(html);
   let closed = 0;
   document.querySelector('#addresses')?.setAttribute('value', '');
   if (document.querySelector('#addresses')) document.querySelector('#addresses').value = '';
   const context = vm.createContext({
-    window: { addEventListener: window.addEventListener.bind(window), close: () => { closed++; }, confirm: () => true },
+    window: { addEventListener: window.addEventListener.bind(window), close: () => { closed++; }, confirm },
     document, messenger: api, location: { search: '?token=test' }, URLSearchParams, console,
     parseWatchlistInput, loadWatchlist, saveWatchlist
   });
@@ -26,34 +26,83 @@ async function page(name, api) {
   return {
     document, window, closed: () => closed,
     event(selector, type) { document.querySelector(selector).dispatchEvent(new window.Event(type, { bubbles: true, cancelable: true })); },
-    async click(selector) { this.event(selector, 'click'); await tick(); }
+    async click(selector) { this.event(selector, 'click'); await tick(); },
+    async submit() { this.event('#add-form', 'submit'); await tick(); }
   };
 }
 
-test('settings DOM: explicit save, deduplication, validation and removal', async () => {
+test('settings DOM: labels describe their controls and Add/Remove save immediately', async () => {
   let watchlist = [], writes = [];
   const p = await page('options', { storage: { local: { get: async () => ({ watchlist }), set: async data => { watchlist = data.watchlist; writes.push(data); } } } });
-  assert.equal(p.document.title, 'Owl · Watched addresses');
+  assert.equal(p.document.title, 'Owl · Settings');
+  assert.equal(p.document.querySelector('h1').textContent, 'Configure your safety net.');
+  assert.equal(p.document.querySelector('.page-heading .eyebrow'), null);
+  assert.equal(p.document.querySelector('.page-footer span:last-child').textContent, 'Are you sure?');
+  assert.equal(p.document.querySelector('.settings-help').localName, 'section');
+  assert.equal(p.document.querySelector('.settings-help h2').textContent, 'Matching, privacy, and mailing lists');
+  assert.equal(p.document.querySelector('.settings-help summary'), null);
+  assert.equal(p.document.querySelectorAll('.settings-help p').length, 3);
   assert.equal(p.document.querySelector('.brand-logo').textContent, '🦉');
   assert.equal(p.document.querySelector('.brand-note').textContent, 'Are you sure?');
+  assert.equal(p.document.querySelector('#save'), null);
+  assert.equal(p.document.querySelector('label[for=addresses]').textContent, 'Add email addresses');
+  assert.equal(p.document.querySelector('#add-form').nextElementSibling.className, 'watchlist-section');
+  assert.equal(p.document.querySelector('#watchlist-heading #address-count').textContent, '0');
   const input = p.document.querySelector('#addresses');
   input.value = 'Jane@Example.com; all-staff@company.com; jane@example.com';
   p.event('#addresses', 'input');
-  p.event('#add-form', 'submit');
+  assert.equal(writes.length, 0, 'typing alone must not save');
+  await p.submit();
   assert.equal(p.document.querySelectorAll('#watchlist li').length, 2);
-  assert.equal(writes.length, 0);
-  await p.click('#save');
   assert.deepEqual(watchlist, ['all-staff@company.com', 'jane@example.com']);
-  assert.match(p.document.querySelector('#save-status').textContent, /All changes saved/);
+  assert.equal(writes.length, 1);
+  assert.equal(input.value, '');
+  assert.match(p.document.querySelector('#save-status').textContent, /Saved on this device/);
+  assert.equal(p.document.querySelector('#address-count').textContent, '2');
   input.value = 'new@example.com, broken';
   p.event('#addresses', 'input');
   assert.equal(p.document.querySelector('#add').disabled, true);
-  assert.equal(p.document.querySelector('#save').disabled, true);
   assert.match(p.document.querySelector('#input-error').textContent, /broken/);
   input.value = ''; p.event('#addresses', 'input');
   await p.click('#watchlist li button');
   assert.equal(p.document.querySelectorAll('#watchlist li').length, 1);
-  assert.equal(writes.length, 1);
+  assert.deepEqual(watchlist, ['jane@example.com']);
+  assert.equal(writes.length, 2);
+});
+
+test('settings DOM: an underscore address can be added and saved', async () => {
+  let watchlist = [];
+  const p = await page('options', { storage: { local: {
+    get: async () => ({ watchlist }),
+    set: async value => { watchlist = value.watchlist; }
+  } } });
+  const input = p.document.querySelector('#addresses');
+  input.value = 'laika_devs@meta.com';
+  p.event('#addresses', 'input');
+  assert.equal(p.document.querySelector('#add').disabled, false);
+  assert.equal(p.document.querySelector('#input-error').hidden, true);
+  await p.submit();
+  assert.deepEqual(watchlist, ['laika_devs@meta.com']);
+  assert.match(p.document.querySelector('#save-status').textContent, /Saved on this device/);
+});
+
+test('settings DOM: an address without a domain suffix cannot be added or saved', async () => {
+  const p = await page('options', { storage: { local: {
+    get: async () => ({ watchlist: [] }),
+    set: async () => assert.fail('invalid address must not be saved')
+  } } });
+  const input = p.document.querySelector('#addresses');
+  input.value = 'a@email';
+  p.event('#addresses', 'input');
+  assert.equal(p.document.querySelector('#add').disabled, true);
+  assert.equal(input.getAttribute('aria-invalid'), 'true');
+  assert.match(p.document.querySelector('#input-error').textContent, /a@email/);
+  await p.submit();
+  assert.equal(p.document.querySelectorAll('#watchlist li').length, 0);
+  input.value = 'a@email.com';
+  p.event('#addresses', 'input');
+  assert.equal(p.document.querySelector('#add').disabled, false);
+  assert.equal(p.document.querySelector('#input-error').hidden, true);
 });
 
 test('settings DOM: failed read is not an empty, writable list', async () => {
@@ -61,25 +110,85 @@ test('settings DOM: failed read is not an empty, writable list', async () => {
   const p = await page('options', { storage: { local: { get: async () => { throw new Error('Unavailable'); }, set: async () => { writes++; } } } });
   assert.equal(p.document.querySelector('#load-error').hidden, false);
   assert.equal(p.document.querySelector('#addresses').disabled, true);
-  assert.equal(p.document.querySelector('#save').disabled, true);
+  assert.equal(p.document.querySelector('#add').disabled, true);
   assert.equal(writes, 0);
 });
 
-test('settings DOM: failed save retains draft and allows retry', async () => {
-  const p = await page('options', { storage: { local: { get: async () => ({ watchlist: ['a@example.com'] }), set: async () => { throw new Error('Save unavailable'); } } } });
+test('settings DOM: failed addition retains the input and can be retried', async () => {
+  let watchlist = [], fail = true;
+  const p = await page('options', { storage: { local: {
+    get: async () => ({ watchlist }),
+    set: async data => { if (fail) throw new Error('Save unavailable'); watchlist = data.watchlist; }
+  } } });
+  const input = p.document.querySelector('#addresses');
+  input.value = 'new@example.com'; p.event('#addresses', 'input');
+  await p.submit();
+  assert.match(p.document.querySelector('#save-error').textContent, /Save unavailable/);
+  assert.equal(p.document.querySelector('#save-status').textContent, 'Changes not saved');
+  assert.equal(p.document.querySelectorAll('#watchlist li').length, 0);
+  assert.equal(input.value, 'new@example.com');
+  assert.deepEqual(watchlist, []);
+  assert.equal(p.document.querySelector('#add').disabled, false);
+  fail = false;
+  await p.submit();
+  assert.deepEqual(watchlist, ['new@example.com']);
+  assert.equal(input.value, '');
+  assert.equal(p.document.querySelector('#save-error').hidden, true);
+});
+
+test('settings DOM: failed removal leaves the saved list visible', async () => {
+  const p = await page('options', { storage: { local: {
+    get: async () => ({ watchlist: ['a@example.com'] }),
+    set: async () => { throw new Error('Save unavailable'); }
+  } } });
   await p.click('#watchlist li button');
-  await p.click('#save');
-  assert.match(p.document.querySelector('#save-status').textContent, /Save unavailable/);
-  assert.equal(p.document.querySelector('#save').disabled, false);
+  assert.match(p.document.querySelector('#save-error').textContent, /Save unavailable/);
+  assert.equal(p.document.querySelectorAll('#watchlist li').length, 1);
+  assert.equal(p.document.querySelector('#watchlist li button').disabled, false);
+});
+
+test('settings DOM: removing the final address requires confirmation before saving', async () => {
+  let watchlist = ['a@example.com'], approved = false, confirmations = 0;
+  const p = await page('options', { storage: { local: {
+    get: async () => ({ watchlist }), set: async data => { watchlist = data.watchlist; }
+  } } }, { confirm: () => { confirmations++; return approved; } });
+  await p.click('#watchlist li button');
+  assert.deepEqual(watchlist, ['a@example.com']);
+  approved = true;
+  await p.click('#watchlist li button');
+  assert.deepEqual(watchlist, []);
+  assert.equal(confirmations, 2);
+  assert.equal(p.document.querySelector('#empty-state').hidden, false);
 });
 
 test('settings DOM: another tab changing the list prevents a silent overwrite', async () => {
   let state = ['a@example.com'];
   const p = await page('options', { storage: { local: { get: async () => ({ watchlist: state }), set: async () => assert.fail('must not overwrite') } } });
-  await p.click('#watchlist li button');
   state = ['new@example.com'];
-  await p.click('#save');
-  assert.match(p.document.querySelector('#save-status').textContent, /another settings tab/);
+  await p.click('#watchlist li button');
+  assert.match(p.document.querySelector('#save-error').textContent, /another settings tab/);
+  assert.deepEqual(state, ['new@example.com']);
+  assert.equal(p.document.querySelectorAll('#watchlist li').length, 1);
+});
+
+test('settings DOM: saving disables mutations until the write finishes', async () => {
+  let finishWrite, writes = 0, watchlist = [];
+  const p = await page('options', { storage: { local: {
+    get: async () => ({ watchlist }),
+    set: data => { writes++; return new Promise(resolve => { finishWrite = () => { watchlist = data.watchlist; resolve(); }; }); }
+  } } });
+  const input = p.document.querySelector('#addresses');
+  input.value = 'a@example.com'; p.event('#addresses', 'input');
+  await p.submit();
+  assert.equal(p.document.querySelector('#save-status').textContent, 'Saving…');
+  assert.equal(input.disabled, true);
+  assert.equal(p.document.querySelector('#add').disabled, true);
+  await p.submit();
+  assert.equal(writes, 1);
+  assert.equal(p.document.querySelectorAll('#watchlist li').length, 0);
+  finishWrite(); await tick();
+  assert.equal(p.document.querySelectorAll('#watchlist li').length, 1);
+  assert.equal(input.disabled, false);
 });
 
 test('warning DOM: addresses are text; send requires an explicit click', async () => {

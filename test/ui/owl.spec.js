@@ -19,35 +19,56 @@ async function mockThunderbird(page, options = {}) {
   }, options);
 }
 
-test('settings add, remove, validate and explicitly save', async ({ page }) => {
+test('settings Add and Remove save immediately with labels above their controls', async ({ page }) => {
   await mockThunderbird(page);
   await page.goto('/options.html');
-  await expect(page.getByText('A clear list. A clear head.')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+  await expect(page.getByRole('heading', { name: 'Configure your safety net.' })).toBeVisible();
+  await expect(page.getByText('No addresses watched yet. Add an address above to get started.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save changes' })).toHaveCount(0);
+  await expect(page.locator('#watchlist-heading #address-count')).toHaveText('0');
   await page.getByLabel('Add email addresses', { exact: true }).fill('Jane@Example.com; staff@company.com\njane@example.com');
+  expect(await page.evaluate(() => window.owlTest.writes)).toEqual([]);
   await page.getByRole('button', { name: 'Add to list' }).click();
   await expect(page.locator('#watchlist li')).toHaveCount(2);
-  await expect(page.getByText('Unsaved changes', { exact: true })).toBeVisible();
-  expect(await page.evaluate(() => window.owlTest.writes)).toEqual([]);
-  await page.getByRole('button', { name: 'Save changes' }).click();
+  await expect(page.getByRole('status')).toHaveText('Saved on this device');
   expect(await page.evaluate(() => window.owlTest.writes)).toEqual([{ watchlist: ['jane@example.com', 'staff@company.com'] }]);
+  const input = await page.locator('#addresses').boundingBox();
+  const heading = await page.locator('#watchlist-heading').boundingBox();
+  const list = await page.locator('#watchlist').boundingBox();
+  expect(input.y + input.height).toBeLessThan(heading.y);
+  expect(heading.y + heading.height).toBeLessThan(list.y);
   await page.getByRole('button', { name: 'Remove jane@example.com', exact: true }).click();
   await expect(page.locator('#watchlist li')).toHaveCount(1);
+  expect(await page.evaluate(() => window.owlTest.writes)).toEqual([{ watchlist: ['jane@example.com', 'staff@company.com'] }, { watchlist: ['staff@company.com'] }]);
   await page.getByLabel('Add email addresses', { exact: true }).fill('valid@example.com, invalid, *@example.com');
   await expect(page.getByRole('button', { name: 'Add to list' })).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Save changes' })).toBeDisabled();
   await expect(page.getByRole('alert').filter({ hasText: 'Not full addresses' })).toContainText('invalid');
   await expect(page.locator('#watchlist li')).toHaveCount(1);
 });
 
-test('storage failures do not look saved, or silently reset a broken list', async ({ page }) => {
+test('settings reject addresses without a domain suffix', async ({ page }) => {
+  await mockThunderbird(page);
+  await page.goto('/options.html');
+  const input = page.getByLabel('Add email addresses', { exact: true });
+  await input.fill('a@email');
+  await expect(page.getByRole('button', { name: 'Add to list' })).toBeDisabled();
+  await expect(input).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#input-error')).toContainText('a@email');
+  await input.fill('a@email.com');
+  await expect(page.getByRole('button', { name: 'Add to list' })).toBeEnabled();
+  await page.getByRole('button', { name: 'Add to list' }).click();
+  await expect(page.locator('#watchlist li')).toHaveText('Aa@email.com×');
+});
+
+test('storage failures leave the saved address visible and removable', async ({ page }) => {
   await mockThunderbird(page, { stored: ['watched@example.com'], failWrite: true });
   await page.goto('/options.html');
-  await page.getByRole('button', { name: 'Remove watched@example.com' }).click();
   page.once('dialog', dialog => dialog.accept());
-  await page.getByRole('button', { name: 'Save changes' }).click();
-  await expect(page.getByRole('status')).toContainText('Could not save');
-  await expect(page.getByRole('button', { name: 'Save changes' })).toBeEnabled();
+  await page.getByRole('button', { name: 'Remove watched@example.com' }).click();
+  await expect(page.locator('#save-error')).toContainText('Could not save');
+  await expect(page.getByRole('status')).toHaveText('Changes not saved');
+  await expect(page.getByRole('button', { name: 'Remove watched@example.com' })).toBeEnabled();
+  await expect(page.locator('#watchlist li')).toHaveCount(1);
 });
 
 test('corrupt settings require explicit repair', async ({ page }) => {
