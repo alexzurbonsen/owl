@@ -21,7 +21,7 @@ Owl is a fresh implementation, not a fork. It has no shipped third-party librari
 
 A server-managed list with its own email address can be watched like any other address. Membership is not inspected. Thunderbird address-book references/lists are not expanded: when encountered with a nonempty watchlist, unsupported recipients produce a verification-failed warning rather than being silently considered safe.
 
-The watchlist accepts ordinary unquoted addresses, including international characters and single-label domains. Quoted local parts and domain literals are unsupported; recipients using them produce a verification-failed warning. Unicode and punycode spellings are **not** treated as equivalent. There is no alias guessing.
+The watchlist accepts ordinary unquoted addresses, including international characters, and requires a domain suffix (for example, `jane@example.com`). Single-label domains such as `a@email` are rejected. This checks syntax only, not domain registration or mailbox existence. Previously saved single-label addresses must be removed: a watchlist containing one is reported as invalid rather than silently ignored. Quoted local parts and domain literals are unsupported; recipients using them produce a verification-failed warning. Unicode and punycode spellings are **not** treated as equivalent. There is no alias guessing.
 
 ### Limits
 

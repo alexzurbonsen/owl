@@ -2,7 +2,7 @@
 export function normalizeAddress(value) {
   if (typeof value !== 'string') throw new Error('Enter a full email address.');
   const address = value.trim().toLowerCase();
-  // Accept ordinary and international addresses, including single-label domains.
+  // Accept ordinary and international addresses with a dotted domain.
   // Quoted local parts and domain literals are outside Owl's supported syntax.
   if (address.length > 254 || !/^[^\s@<>(),;:"\[\]\\]+@[^\s@<>(),;:"\[\]\\]+$/u.test(address)) {
     throw new Error('Use a full address, such as jane@example.com (no display names or patterns).');
@@ -10,7 +10,8 @@ export function normalizeAddress(value) {
   if (address.includes('*') || address.includes('?')) throw new Error('Patterns are not supported. Enter a full email address.');
   const [local, domain] = address.split('@');
   const labels = domain.split('.');
-  if (local.length > 64 || !/^[\p{L}\p{N}\p{M}!#$%&'+/=`{|}~^.-]+$/u.test(local) ||
+  if (labels.length < 2) throw new Error('Include a domain suffix, such as jane@example.com.');
+  if (local.length > 64 || !/^[\p{L}\p{N}\p{M}!#$%&'+/=`{|}~^._-]+$/u.test(local) ||
       local.startsWith('.') || local.endsWith('.') || local.includes('..') ||
       labels.some(label => label.length > 63 || !/^[\p{L}\p{N}](?:[\p{L}\p{N}\p{M}-]*[\p{L}\p{N}\p{M}])?$/u.test(label))) {
     throw new Error('Enter a complete email address with a valid mailbox and domain.');

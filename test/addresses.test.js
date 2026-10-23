@@ -3,11 +3,33 @@ import assert from 'node:assert/strict';
 import { normalizeAddress, parseWatchlistInput, findMatches } from '../extension/addresses.js';
 import { loadWatchlist, saveWatchlist } from '../extension/watchlist.js';
 
-test('full-address normalization preserves aliases and requires no public domain', () => {
+test('full-address normalization preserves aliases and international characters', () => {
   assert.equal(normalizeAddress('  Jane+TAG@Sub.Example.com '), 'jane+tag@sub.example.com');
-  assert.equal(normalizeAddress('jane@localhost'), 'jane@localhost');
   assert.equal(normalizeAddress('Zoë@BÜCHER.example'), 'zoë@bücher.example');
   for (const value of ['example.com', '@example.com', '*@example.com', 'jane?@example.com', 'Jane <jane@example.com>', 'a@@b', 'a b@c', '', null, 'a@b\nc@d', '.a@b', 'a..b@c', 'a@-b', 'a@b..com', 'a@b/', 'a@b#']) assert.throws(() => normalizeAddress(value));
+});
+
+test('underscores in the mailbox can be added, saved, loaded, and matched', async () => {
+  const address = 'laika_devs@meta.com';
+  assert.equal(normalizeAddress(' Laika_Devs@Meta.com '), address);
+  assert.deepEqual(parseWatchlistInput(address), { addresses: [address], invalid: [] });
+  let stored;
+  await saveWatchlist({ set: async value => { stored = value; } }, [address]);
+  assert.deepEqual(await loadWatchlist({ get: async () => stored }), [address]);
+  const matches = await findMatches({ to: ['Laika developers <laika_devs@meta.com>'] }, new Set([address]), async () => [{ email: address }]);
+  assert.deepEqual(matches, [{ field: 'to', address }]);
+  assert.throws(() => normalizeAddress('laika@meta_devs.com'), 'underscore in domain remains invalid');
+});
+
+test('watchlist addresses require a domain suffix', async () => {
+  for (const address of ['a@email', 'jane@localhost', 'a@email.', 'a@.com']) {
+    assert.throws(() => normalizeAddress(address), address);
+    assert.deepEqual(parseWatchlistInput(address), { addresses: [], invalid: [address] });
+    await assert.rejects(saveWatchlist({ set: async () => assert.fail('must not save') }, [address]));
+  }
+  for (const address of ['a@email.com', 'a@email.co.uk', 'a@sub.email.de', 'a@bücher.de', 'a@xn--bcher-kva.de']) {
+    assert.equal(normalizeAddress(address), address);
+  }
 });
 
 test('pasting many addresses deduplicates but never silently drops invalid input', () => {
@@ -28,7 +50,7 @@ test('does not match substrings, aliases, or domains', async () => {
 });
 
 test('native parser can return multiple concrete mailboxes', async () => {
-  const result = await findMatches({ to: ['two addresses'] }, new Set(['a@b', 'c@d']), async () => [{ email: 'a@b' }, { email: 'c@d' }]);
+  const result = await findMatches({ to: ['two addresses'] }, new Set(['a@b.com', 'c@d.com']), async () => [{ email: 'a@b.com' }, { email: 'c@d.com' }]);
   assert.equal(result.length, 2);
 });
 
@@ -45,7 +67,7 @@ test('missing watchlist is empty, but malformed settings do not silently become 
 
 test('only validated, sorted watchlist addresses are saved', async () => {
   let stored;
-  await saveWatchlist({ set: async value => { stored = value; } }, ['Z@b', 'a@b', 'a@b']);
-  assert.deepEqual(stored, { watchlist: ['a@b', 'z@b'] });
+  await saveWatchlist({ set: async value => { stored = value; } }, ['Z@b.com', 'a@b.com', 'a@b.com']);
+  assert.deepEqual(stored, { watchlist: ['a@b.com', 'z@b.com'] });
   await assert.rejects(saveWatchlist({ set: async () => assert.fail('must not save') }, ['bad']));
 });
