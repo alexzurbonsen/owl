@@ -87,7 +87,7 @@ Use `bun run test`, not `bun test`: the script intentionally runs the Node test 
 
 The project remains plain JavaScript; no type checker is configured. Python scripts are outside the Prettier/ESLint checks. Generated files, dependencies, the Bun lockfile, and the canonical license text are excluded from formatting. Tooling is development-only and is not shipped in the XPI.
 
-The build includes only `extension/`. Development dependencies and tests are not shipped. Packaging uses sorted files and fixed ZIP timestamps for reproducible output.
+The build includes `extension/` and the root `LICENSE` file, placed at the root of the XPI. Development dependencies and tests are not shipped. Packaging uses sorted files and fixed ZIP timestamps for reproducible output.
 
 ### Browser UI tests
 
