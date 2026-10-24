@@ -31,7 +31,7 @@ Warnings are separate popup windows, not operating-system modal dialogs. The sen
 
 ## Install
 
-Targets Thunderbird **137 and newer**, using its native mailbox parser (your previously checked 156.0.1 installation meets this requirement). Real Thunderbird integration still requires the manual checks below; the automated tests mock its APIs.
+Targets Thunderbird **137 and newer**, using its native mailbox parser.
 
 The built package is always `dist/owl.xpi`, with extension ID `owl@owl.local`. Each build replaces that same file; the release version lives inside the manifest, not in the filename. This is a new identity: saved watchlists from builds using the old ID do not transfer. Copy any addresses you want to keep before removing the previous installation, then disable or remove it to avoid duplicate warnings. Re-enter your addresses in Owl; each Add action saves automatically. Future updates using this ID retain the watchlist; the project directory can be renamed independently.
 
@@ -41,8 +41,6 @@ The built package is always `dist/owl.xpi`, with extension ID `owl@owl.local`. E
 4. Open Owl's preferences and use **Add to list** to add full addresses. Additions and removals save automatically; there is no separate Save button.
 
 For development, use Thunderbird's add-on debugging page and **Load Temporary Add-on**, selecting `dist/owl.xpi`. After rebuilding, click **Reload** on that temporary add-on; the file path stays the same. You can also load `extension/manifest.json` directly and reload source changes without packaging. Temporary installations must be reloaded after restarting Thunderbird.
-
-**First test with an address you control.** Add it to the watchlist, send a harmless test message, and verify that cancelling prevents the send before relying on Owl for sensitive mail. If testing against an existing guard add-on, disable the other guard first so its warning does not obscure which extension is responsible.
 
 ## Privacy and security
 
