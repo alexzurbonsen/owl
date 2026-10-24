@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Owl",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "Pause before sending to watched email addresses. Private, local, and exact-match only.",
   "browser_specific_settings": {
     "gecko": {

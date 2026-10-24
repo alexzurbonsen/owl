@@ -6,7 +6,7 @@
 
 - One global watchlist for all sending accounts. Adding or removing an address saves immediately; typing alone does not. Failed writes leave the saved list unchanged and show an error. Removing the last address requires confirmation.
 - Checks **To, Cc, and Bcc**, including display-name forms such as `Jane <jane@example.com>`.
-- Matches complete addresses after trimming surrounding whitespace and lowercasing. No domains, wildcards, substring matching, plus-address stripping, or dot normalization.
+- Matches complete addresses after trimming surrounding whitespace, lowercasing, and normalizing Unicode to NFC. No domains, wildcards, substring matching, plus-address stripping, or dot normalization.
 - Watched recipient → **Cancel sending** or **Send anyway**.
 - Failed verification → a distinct warning: **Cancel sending** or **Send without verification**.
 - Cancel is focused by default. Closing a warning or pressing Escape cancels.

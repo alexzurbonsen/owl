@@ -27,6 +27,25 @@ test('full-address normalization preserves aliases and international characters'
     assert.throws(() => normalizeAddress(value));
 });
 
+test('canonically equivalent Unicode addresses match in either normalization form', async () => {
+  const nfc = 'zoë@bücher.example';
+  const nfd = nfc.normalize('NFD');
+  assert.notEqual(nfc, nfd);
+  const parseMailbox = async (email) => [{ email }];
+  for (const [saved, recipient] of [
+    [nfc, nfd],
+    [nfd, nfc],
+  ]) {
+    const watched = await loadWatchlist({ get: async () => ({ watchlist: [saved] }) });
+    const matches = await findMatches({ to: [recipient] }, new Set(watched), parseMailbox);
+    assert.deepEqual(matches, [{ field: 'to', address: nfc }]);
+    assert.deepEqual(watched, [nfc]);
+  }
+  assert.deepEqual(parseWatchlistInput(nfc + '; ' + nfd), { addresses: [nfc], invalid: [] });
+  // Lowercasing can introduce a decomposed sequence: normalize the final result.
+  assert.equal(normalizeAddress('Ι\u0308\u0301@example.com'), 'ΐ@example.com');
+});
+
 test('underscores in the mailbox can be added, saved, loaded, and matched', async () => {
   const address = 'laika_devs@meta.com';
   assert.equal(normalizeAddress(' Laika_Devs@Meta.com '), address);

@@ -82,12 +82,28 @@ test('popup URL contains only a token; warning data requires its own sender', as
   );
 });
 
-test('closing popup cancels', async () => {
+test('closing popup cancels without trying to remove the already-closed window', async () => {
   const f = fixture();
   const result = f.ask({ id: 50 }, warning);
   await tick();
   f.api.windows.onRemoved.emit(1);
   assert.equal(await result, false);
+  assert.deepEqual(f.removed, []);
+});
+
+test('explicit Cancel and Send decisions each remove the popup once', async () => {
+  for (const approved of [false, true]) {
+    const f = fixture();
+    const result = f.ask({ id: 50 }, warning);
+    await tick();
+    await f.api.runtime.onMessage.emit(
+      { type: 'owl:decision', token: 'token-1', approved },
+      f.sender(1),
+    );
+    assert.equal(await result, approved);
+    f.api.windows.onRemoved.emit(1);
+    assert.deepEqual(f.removed, [1]);
+  }
 });
 
 test('closing compose tab cancels and cleans up popup', async () => {
@@ -133,6 +149,7 @@ test('closing a popup before create resolves still cancels', async () => {
   };
   assert.equal(await f.ask({ id: 50 }, warning), false);
   assert.equal(f.updated.length, 0);
+  assert.deepEqual(f.removed, []);
 });
 
 test('compose close during creation does not leave an orphaned popup', async () => {

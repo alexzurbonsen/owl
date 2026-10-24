@@ -4,12 +4,12 @@ export function createWarnings(api, makeId) {
   const closedWindows = new Set();
   let opening = 0;
 
-  function finish(token, approved) {
+  function finish(token, approved, { closeWindow = true } = {}) {
     const entry = pending.get(token);
     if (!entry) return;
     pending.delete(token);
     entry.resolve(approved);
-    if (entry.windowId !== null) {
+    if (closeWindow && entry.windowId !== null) {
       api.windows
         .remove(entry.windowId)
         .catch((error) => console.error('Owl could not close a completed warning.', error));
@@ -41,7 +41,7 @@ export function createWarnings(api, makeId) {
   api.windows.onRemoved.addListener((windowId) => {
     if (opening > 0) closedWindows.add(windowId);
     for (const [token, entry] of pending) {
-      if (entry.windowId === windowId) finish(token, false);
+      if (entry.windowId === windowId) finish(token, false, { closeWindow: false });
     }
   });
 
@@ -72,11 +72,12 @@ export function createWarnings(api, makeId) {
       if (Number.isInteger(popup.id)) entry.windowId = popup.id;
       if (entry.windowId === null || !Number.isInteger(popup.tabs?.[0]?.id))
         throw new Error('Could not create a warning window.');
-      if (!pending.has(token) || closedWindows.has(popup.id)) {
+      if (closedWindows.has(popup.id)) {
+        finish(token, false, { closeWindow: false });
+      } else if (!pending.has(token)) {
         api.windows
           .remove(popup.id)
           .catch((error) => console.error('Owl could not close a cancelled warning.', error));
-        finish(token, false);
       } else {
         await api.tabs.update(popup.tabs[0].id, {
           url: api.runtime.getURL('warning.html') + '?token=' + token,

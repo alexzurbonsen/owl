@@ -1,7 +1,7 @@
-// Exact addresses, not patterns. Deliberately no alias or domain normalization.
+// Exact addresses, not patterns. No alias guessing or Unicode/punycode conversion.
 export function normalizeAddress(value) {
   if (typeof value !== 'string') throw new Error('Enter a full email address.');
-  const address = value.trim().toLowerCase();
+  const address = value.trim().toLowerCase().normalize('NFC');
   // Accept ordinary and international addresses with a dotted domain.
   // Quoted local parts and domain literals are outside Owl's supported syntax.
   if (address.length > 254 || !/^[^\s@<>(),;:"[\]\\]+@[^\s@<>(),;:"[\]\\]+$/u.test(address)) {
