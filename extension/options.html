@@ -1,36 +1,95 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Owl · Settings</title>
-  <link rel="icon" href="icons/owl.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="ui.css">
-  <script type="module" src="options.js"></script>
-</head>
-<body>
-  <main class="settings-shell">
-    <header class="brand"><span class="brand-logo" aria-hidden="true">🦉</span><span>owl<span class="brand-note">Are you sure?</span></span><span class="privacy-pill">Local only</span></header>
-    <div class="page-heading"><h1>Configure your safety net.</h1><p>Choose which addresses require confirmation before sending.</p></div>
-    <div class="card">
-      <div id="load-error" class="notice error" role="alert" hidden><strong>Your watchlist could not be loaded.</strong><p>Owl will ask before sending if it cannot read its settings. Retry, or explicitly clear the saved list to start over.</p><div class="inline-actions"><button id="retry" type="button" class="secondary">Retry loading</button><button id="reset" type="button" class="text-button">Clear saved list…</button></div></div>
-      <form id="add-form">
-        <label for="addresses">Add email addresses</label>
-        <div class="add-controls"><textarea id="addresses" name="addresses" rows="2" placeholder="jane@example.com" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="input-hint input-error" disabled></textarea><button id="add" type="submit" class="primary" disabled>Add to list <span aria-hidden="true">+</span></button></div>
-        <p id="input-hint" class="hint">Paste several, separated by spaces, commas, semicolons, or new lines.</p>
-        <p id="input-error" class="field-error" role="alert" hidden></p>
-      </form>
-      <section class="watchlist-section" aria-labelledby="watchlist-heading">
-        <div class="section-heading"><h2 id="watchlist-heading">Watched addresses <span id="address-count" class="count">0</span></h2></div>
-        <p class="hint">Owl asks before sending to these addresses in To, Cc, or Bcc.</p>
-        <ul id="watchlist" class="address-list" aria-label="Watched email addresses"></ul>
-        <div id="empty-state" class="empty-state"><p>No addresses watched yet. Add an address above to get started.</p></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Owl · Settings</title>
+    <link rel="icon" href="icons/owl.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="ui.css" />
+    <script type="module" src="options.js"></script>
+  </head>
+  <body>
+    <main class="settings-shell">
+      <header class="brand">
+        <span class="brand-logo" aria-hidden="true">🦉</span
+        ><span>owl<span class="brand-note">Are you sure?</span></span
+        ><span class="privacy-pill">Local only</span>
+      </header>
+      <div class="page-heading">
+        <h1>Configure your safety net.</h1>
+        <p>Choose which addresses require confirmation before sending.</p>
+      </div>
+      <div class="card">
+        <div id="load-error" class="notice error" role="alert" hidden>
+          <strong>Your watchlist could not be loaded.</strong>
+          <p>
+            Owl will ask before sending if it cannot read its settings. Retry, or explicitly clear
+            the saved list to start over.
+          </p>
+          <div class="inline-actions">
+            <button id="retry" type="button" class="secondary">Retry loading</button
+            ><button id="reset" type="button" class="text-button">Clear saved list…</button>
+          </div>
+        </div>
+        <form id="add-form">
+          <label for="addresses">Add email addresses</label>
+          <div class="add-controls">
+            <textarea
+              id="addresses"
+              name="addresses"
+              rows="2"
+              placeholder="jane@example.com"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              aria-describedby="input-hint input-error"
+              disabled
+            ></textarea
+            ><button id="add" type="submit" class="primary" disabled>
+              Add to list <span aria-hidden="true">+</span>
+            </button>
+          </div>
+          <p id="input-hint" class="hint">
+            Paste several, separated by spaces, commas, semicolons, or new lines.
+          </p>
+          <p id="input-error" class="field-error" role="alert" hidden></p>
+        </form>
+        <section class="watchlist-section" aria-labelledby="watchlist-heading">
+          <div class="section-heading">
+            <h2 id="watchlist-heading">
+              Watched addresses <span id="address-count" class="count">0</span>
+            </h2>
+          </div>
+          <p class="hint">Owl asks before sending to these addresses in To, Cc, or Bcc.</p>
+          <ul id="watchlist" class="address-list" aria-label="Watched email addresses"></ul>
+          <div id="empty-state" class="empty-state">
+            <p>No addresses watched yet. Add an address above to get started.</p>
+          </div>
+        </section>
+        <footer class="save-bar">
+          <span id="save-status" class="save-status" role="status" aria-live="polite"
+            >Loading your watchlist…</span
+          ><span class="hint">Additions and removals save automatically.</span>
+          <p id="save-error" class="field-error" role="alert" hidden></p>
+        </footer>
+      </div>
+      <section class="settings-help" aria-labelledby="help-heading">
+        <h2 id="help-heading">Matching, privacy, and mailing lists</h2>
+        <p>
+          Addresses are matched ignoring case. No domain rules, wildcards, or alias guessing.
+          Include a domain suffix, such as jane@example.com.
+        </p>
+        <p>
+          Only your watchlist is saved on this device. No analytics, clipboard access, or servers.
+        </p>
+        <p>
+          A list’s own email address can be watched. Owl does not inspect list membership or expand
+          address-book lists. Unsupported recipients require a “Send without verification” decision
+          when the watchlist is nonempty.
+        </p>
       </section>
-      <footer class="save-bar"><span id="save-status" class="save-status" role="status" aria-live="polite">Loading your watchlist…</span><span class="hint">Additions and removals save automatically.</span><p id="save-error" class="field-error" role="alert" hidden></p></footer>
-    </div>
-    <section class="settings-help" aria-labelledby="help-heading"><h2 id="help-heading">Matching, privacy, and mailing lists</h2><p>Addresses are matched ignoring case. No domain rules, wildcards, or alias guessing. Include a domain suffix, such as jane@example.com.</p><p>Only your watchlist is saved on this device. No analytics, clipboard access, or servers.</p><p>A list’s own email address can be watched. Owl does not inspect list membership or expand address-book lists. Unsupported recipients require a “Send without verification” decision when the watchlist is nonempty.</p></section>
-    <footer class="page-footer"><span>OWL</span><span>Are you sure?</span></footer>
-    <noscript><p class="notice error">Owl needs JavaScript to edit its watchlist.</p></noscript>
-  </main>
-</body>
+      <footer class="page-footer"><span>OWL</span><span>Are you sure?</span></footer>
+      <noscript><p class="notice error">Owl needs JavaScript to edit its watchlist.</p></noscript>
+    </main>
+  </body>
 </html>

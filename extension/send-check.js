@@ -15,7 +15,8 @@ export function createSendCheck({ storage, parseMailbox, ask, reportError }) {
       reportError(error);
       warning = {
         kind: 'error',
-        reason: error instanceof Error ? error.message : 'An unexpected error interrupted the check.'
+        reason:
+          error instanceof Error ? error.message : 'An unexpected error interrupted the check.',
       };
     }
     try {

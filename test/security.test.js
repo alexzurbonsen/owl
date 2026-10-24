@@ -24,6 +24,10 @@ test('shipped scripts have no HTML injection, telemetry, remote code, or sync st
   for (const file of await readdir(root)) {
     if (!file.endsWith('.js')) continue;
     const source = await readFile(new URL(file, root), 'utf8');
-    assert.doesNotMatch(source, /innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function|storage\.sync|navigator\.clipboard|fetch\(|XMLHttpRequest|WebSocket|https?:\/\//, file);
+    assert.doesNotMatch(
+      source,
+      /innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function|storage\.sync|navigator\.clipboard|fetch\(|XMLHttpRequest|WebSocket|https?:\/\//,
+      file,
+    );
   }
 });

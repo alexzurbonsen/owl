@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 function luminance(hex) {
-  const channels = hex.match(/[0-9a-f]{2}/gi).map(value => {
+  const channels = hex.match(/[0-9a-f]{2}/gi).map((value) => {
     const channel = parseInt(value, 16) / 255;
     return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
   });
@@ -20,9 +20,25 @@ test('light and dark theme text meets WCAG AA contrast against its surfaces', as
   const themes = [...css.matchAll(/:root \{([^}]+)\}/g)];
   assert.equal(themes.length, 2);
   for (const [index, theme] of themes.entries()) {
-    const colors = Object.fromEntries([...theme[1].matchAll(/--([a-z-]+): (#[0-9a-f]{3,8});/g)].map(([, name, hex]) => [name, hex.length === 4 ? '#' + [...hex.slice(1)].map(c => c + c).join('') : hex]));
-    for (const [foreground, background] of [['ink', 'surface'], ['muted', 'surface'], ['muted', 'bg'], ['accent', 'soft'], ['on-accent', 'accent'], ['on-accent', 'accent-hover'], ['error-ink', 'error-bg']]) {
-      assert(contrast(colors[foreground], colors[background]) >= 4.5, 'Theme ' + index + ': ' + foreground + ' on ' + background);
+    const colors = Object.fromEntries(
+      [...theme[1].matchAll(/--([a-z-]+): (#[0-9a-f]{3,8});/g)].map(([, name, hex]) => [
+        name,
+        hex.length === 4 ? '#' + [...hex.slice(1)].map((c) => c + c).join('') : hex,
+      ]),
+    );
+    for (const [foreground, background] of [
+      ['ink', 'surface'],
+      ['muted', 'surface'],
+      ['muted', 'bg'],
+      ['accent', 'soft'],
+      ['on-accent', 'accent'],
+      ['on-accent', 'accent-hover'],
+      ['error-ink', 'error-bg'],
+    ]) {
+      assert(
+        contrast(colors[foreground], colors[background]) >= 4.5,
+        'Theme ' + index + ': ' + foreground + ' on ' + background,
+      );
     }
   }
 });

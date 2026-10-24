@@ -1,34 +1,39 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Are you sure?</title>
-  <link rel="icon" href="icons/owl.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="ui.css">
-  <script type="module" src="warning.js"></script>
-</head>
-<body class="warning-page">
-  <main class="warning-shell" role="dialog" aria-labelledby="warning-title" aria-describedby="warning-description">
-    <div class="warning-heading">
-      <span class="warning-symbol" aria-hidden="true">🦉</span>
-      <h1 id="warning-title">Are you sure?</h1>
-    </div>
-    <p id="warning-description" class="lede" role="status">Checking recipients…</p>
-    <ul id="matches" class="match-list" aria-label="Watched recipients" hidden></ul>
-    <div id="verification-error" class="notice error" hidden>
-      <strong>This message has not been verified.</strong>
-      <p id="error-reason"></p>
-      <p>Send only if you have checked the recipients yourself.</p>
-    </div>
-    <div class="warning-notes">
-      <p id="warning-note">Closing this window cancels sending.</p>
-      <p>Your decision applies only to this send attempt.</p>
-    </div>
-    <footer class="warning-actions">
-      <button id="cancel" class="secondary" type="button" autofocus>Cancel sending</button>
-      <button id="approve" class="primary" type="button" disabled>Send anyway</button>
-    </footer>
-  </main>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Are you sure?</title>
+    <link rel="icon" href="icons/owl.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="ui.css" />
+    <script type="module" src="warning.js"></script>
+  </head>
+  <body class="warning-page">
+    <main
+      class="warning-shell"
+      role="dialog"
+      aria-labelledby="warning-title"
+      aria-describedby="warning-description"
+    >
+      <div class="warning-heading">
+        <span class="warning-symbol" aria-hidden="true">🦉</span>
+        <h1 id="warning-title">Are you sure?</h1>
+      </div>
+      <p id="warning-description" class="lede" role="status">Checking recipients…</p>
+      <ul id="matches" class="match-list" aria-label="Watched recipients" hidden></ul>
+      <div id="verification-error" class="notice error" hidden>
+        <strong>This message has not been verified.</strong>
+        <p id="error-reason"></p>
+        <p>Send only if you have checked the recipients yourself.</p>
+      </div>
+      <div class="warning-notes">
+        <p id="warning-note">Closing this window cancels sending.</p>
+        <p>Your decision applies only to this send attempt.</p>
+      </div>
+      <footer class="warning-actions">
+        <button id="cancel" class="secondary" type="button" autofocus>Cancel sending</button>
+        <button id="approve" class="primary" type="button" disabled>Send anyway</button>
+      </footer>
+    </main>
+  </body>
 </html>

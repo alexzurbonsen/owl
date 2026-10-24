@@ -48,10 +48,10 @@ For development, use Thunderbird's add-on debugging page and **Load Temporary Ad
 
 Only these permissions are requested:
 
-| Permission | Purpose |
-| --- | --- |
-| `compose` | Read recipient fields and intercept sending. Thunderbird grants broader compose access than this narrow use requires. |
-| `storage` | Save the watchlist in local extension storage. |
+| Permission | Purpose                                                                                                               |
+| ---------- | --------------------------------------------------------------------------------------------------------------------- |
+| `compose`  | Read recipient fields and intercept sending. Thunderbird grants broader compose access than this narrow use requires. |
+| `storage`  | Save the watchlist in local extension storage.                                                                        |
 
 - No downloads, account enumeration, address-book, clipboard, native-messaging, or host permissions.
 - No telemetry, exports/imports, sync storage, remote fonts, or network requests.
@@ -65,15 +65,27 @@ Only these permissions are requested:
 
 ## Development
 
-Uses **Bun 1.3.14** for dependency management and scripts, Node.js **22+** for the existing test runner, and Python **3.9+** for packaging. The XPI build needs only Python, not JavaScript dependencies.
+Uses **Bun 1.3.14** for dependency management and scripts, Node.js **22.13+** for JavaScript tooling and the existing test runner, and Python **3.9+** for packaging. The XPI build needs only Python, not JavaScript dependencies.
 
 ```fish
 bun install --frozen-lockfile --ignore-scripts
+bun run format:check
+bun run lint
 bun run test
 bun run build
 ```
 
 Use `bun run test`, not `bun test`: the script intentionally runs the Node test runner. `bun.lock` pins development dependencies.
+
+### Formatting and linting
+
+- `bun run format` formats JavaScript, JSON, HTML, CSS, and Markdown with Prettier.
+- `bun run format:check` checks formatting without changing files.
+- `bun run lint` runs ESLint’s recommended JavaScript rules on the extension, tests, and configuration. Warnings fail the check.
+- `bun run lint:fix` applies ESLint’s available automatic fixes.
+- `bun run check` runs formatting, linting, unit/DOM tests, the XPI build, and browser UI tests. Browser tests require a Playwright browser and an environment that permits launching it.
+
+The project remains plain JavaScript; no type checker is configured. Python scripts are outside the Prettier/ESLint checks. Generated files, dependencies, the Bun lockfile, and the canonical license text are excluded from formatting. Tooling is development-only and is not shipped in the XPI.
 
 The build includes only `extension/`. Development dependencies and tests are not shipped. Packaging uses sorted files and fixed ZIP timestamps for reproducible output.
 
@@ -97,16 +109,16 @@ Screenshots are saved under `test-results/` during the light/dark tests. Browser
 
 ### Source map
 
-| Path | Responsibility |
-| --- | --- |
-| `extension/addresses.js` | Address normalization, paste validation, exact matching using Thunderbird's native mailbox parser. |
-| `extension/watchlist.js` | Validated local watchlist storage. |
-| `extension/send-check.js` | No-match, match warning, and verification-failed outcomes. |
-| `extension/warnings.js` | Popup lifecycle, sender validation, decisions, cancellation, concurrency. |
-| `extension/background.js` | Thunderbird API wiring; registers the send hook at module load. |
-| `extension/options.*` | Watchlist settings UI. |
-| `extension/warning.*` | Confirmation and error UI. |
-| `test/` | Logic, security, popup-lifecycle, and DOM tests; browser tests in `test/ui/`. |
+| Path                      | Responsibility                                                                                     |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| `extension/addresses.js`  | Address normalization, paste validation, exact matching using Thunderbird's native mailbox parser. |
+| `extension/watchlist.js`  | Validated local watchlist storage.                                                                 |
+| `extension/send-check.js` | No-match, match warning, and verification-failed outcomes.                                         |
+| `extension/warnings.js`   | Popup lifecycle, sender validation, decisions, cancellation, concurrency.                          |
+| `extension/background.js` | Thunderbird API wiring; registers the send hook at module load.                                    |
+| `extension/options.*`     | Watchlist settings UI.                                                                             |
+| `extension/warning.*`     | Confirmation and error UI.                                                                         |
+| `test/`                   | Logic, security, popup-lifecycle, and DOM tests; browser tests in `test/ui/`.                      |
 
 ## License
 

@@ -15,10 +15,15 @@ let saving = false;
 function updateControls() {
   const parsed = parseWatchlistInput(input.value);
   inputError.hidden = parsed.invalid.length === 0;
-  inputError.textContent = parsed.invalid.length ? 'Not full addresses: ' + parsed.invalid.join(', ') + '. Nothing will be added until these are corrected.' : '';
+  inputError.textContent = parsed.invalid.length
+    ? 'Not full addresses: ' +
+      parsed.invalid.join(', ') +
+      '. Nothing will be added until these are corrected.'
+    : '';
   input.setAttribute('aria-invalid', String(parsed.invalid.length > 0));
   input.disabled = !loaded || saving;
-  addButton.disabled = !loaded || saving || parsed.addresses.length === 0 || parsed.invalid.length > 0;
+  addButton.disabled =
+    !loaded || saving || parsed.addresses.length === 0 || parsed.invalid.length > 0;
   for (const button of list.querySelectorAll('button')) button.disabled = !loaded || saving;
   document.querySelector('#retry').disabled = saving;
   document.querySelector('#reset').disabled = saving;
@@ -42,8 +47,14 @@ function render() {
     remove.setAttribute('aria-label', 'Remove ' + address);
     remove.addEventListener('click', async () => {
       if (!loaded || saving) return;
-      if (addresses.length === 1 && !window.confirm('Remove the last watched address? Owl will no longer warn about matched addresses.')) return;
-      if (await persist(addresses.filter(value => value !== address))) input.focus();
+      if (
+        addresses.length === 1 &&
+        !window.confirm(
+          'Remove the last watched address? Owl will no longer warn about matched addresses.',
+        )
+      )
+        return;
+      if (await persist(addresses.filter((value) => value !== address))) input.focus();
     });
     li.append(avatar, text, remove);
     list.append(li);
@@ -79,7 +90,9 @@ async function persist(next) {
     // Do not silently overwrite edits saved by another settings tab.
     const current = await loadWatchlist(api.storage.local);
     if (JSON.stringify(current) !== JSON.stringify(addresses)) {
-      throw new Error('Your watchlist changed in another settings tab. Reload this page before making changes.');
+      throw new Error(
+        'Your watchlist changed in another settings tab. Reload this page before making changes.',
+      );
     }
     addresses = await saveWatchlist(api.storage.local, next);
     status.textContent = 'Saved on this device';
@@ -98,7 +111,7 @@ async function persist(next) {
 
 input.addEventListener('input', updateControls);
 
-document.querySelector('#add-form').addEventListener('submit', async event => {
+document.querySelector('#add-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   if (addButton.disabled) return;
   const parsed = parseWatchlistInput(input.value);
@@ -115,7 +128,13 @@ document.querySelector('#add-form').addEventListener('submit', async event => {
 
 document.querySelector('#retry').addEventListener('click', load);
 document.querySelector('#reset').addEventListener('click', async () => {
-  if (saving || !window.confirm('Clear the saved watchlist? This removes every watched address. Owl will not warn about matched addresses until you add new ones.')) return;
+  if (
+    saving ||
+    !window.confirm(
+      'Clear the saved watchlist? This removes every watched address. Owl will not warn about matched addresses until you add new ones.',
+    )
+  )
+    return;
   saving = true;
   updateControls();
   try {
@@ -129,7 +148,7 @@ document.querySelector('#reset').addEventListener('click', async () => {
   }
 });
 
-window.addEventListener('beforeunload', event => {
+window.addEventListener('beforeunload', (event) => {
   if (saving || input.value.trim()) {
     event.preventDefault();
     event.returnValue = '';

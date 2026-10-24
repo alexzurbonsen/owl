@@ -26,7 +26,14 @@ test('rebuilding a new version replaces the same owl.xpi file', async () => {
     assert.equal((await build()).stdout.trim(), 'dist/owl.xpi');
     assert.deepEqual(await readdir(join(root, 'dist')), ['owl.xpi']);
     assert.notDeepEqual(await readFile(join(root, 'dist/owl.xpi')), first);
-    const packagedVersion = await exec('python3', ['-c', 'import json,zipfile; print(json.loads(zipfile.ZipFile("dist/owl.xpi").read("manifest.json"))["version"])'], { cwd: root });
+    const packagedVersion = await exec(
+      'python3',
+      [
+        '-c',
+        'import json,zipfile; print(json.loads(zipfile.ZipFile("dist/owl.xpi").read("manifest.json"))["version"])',
+      ],
+      { cwd: root },
+    );
     assert.equal(packagedVersion.stdout.trim(), '99.0.0');
   } finally {
     await rm(root, { recursive: true, force: true });

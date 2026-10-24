@@ -9,14 +9,9 @@
       "strict_min_version": "137.0"
     }
   },
-  "permissions": [
-    "compose",
-    "storage"
-  ],
+  "permissions": ["compose", "storage"],
   "background": {
-    "scripts": [
-      "background.js"
-    ],
+    "scripts": ["background.js"],
     "type": "module",
     "persistent": true
   },

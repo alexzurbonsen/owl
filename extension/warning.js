@@ -10,13 +10,17 @@ function unavailable() {
   approve.disabled = true;
   cancel.disabled = false;
   document.querySelector('#warning-title').textContent = 'No approval was given';
-  description.textContent = 'Owl could not complete this warning. Close this window to cancel sending, then try again.';
+  description.textContent =
+    'Owl could not complete this warning. Close this window to cancel sending, then try again.';
   cancel.textContent = 'Close and cancel';
 }
 
 async function decide(approved) {
   if (deciding) return;
-  if (!active) { window.close(); return; }
+  if (!active) {
+    window.close();
+    return;
+  }
   deciding = true;
   cancel.disabled = true;
   approve.disabled = true;
@@ -32,8 +36,11 @@ async function decide(approved) {
 
 cancel.addEventListener('click', () => decide(false));
 approve.addEventListener('click', () => decide(true));
-window.addEventListener('keydown', event => {
-  if (event.key === 'Escape') { event.preventDefault(); decide(false); }
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    decide(false);
+  }
 });
 
 async function initialize() {
@@ -42,9 +49,10 @@ async function initialize() {
     const warning = await messenger.runtime.sendMessage({ type: 'owl:warning', token });
     if (warning?.kind === 'match' && Array.isArray(warning.matches) && warning.matches.length > 0) {
       document.querySelector('#warning-title').textContent = 'Are you sure?';
-      description.textContent = warning.matches.length === 1
-        ? 'You’re about to send to this watched address.'
-        : 'You’re about to send to these watched addresses.';
+      description.textContent =
+        warning.matches.length === 1
+          ? 'You’re about to send to this watched address.'
+          : 'You’re about to send to these watched addresses.';
       const list = document.querySelector('#matches');
       for (const match of warning.matches) {
         const li = document.createElement('li');

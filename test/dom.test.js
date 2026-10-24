@@ -16,37 +16,84 @@ async function page(name, api, { confirm = () => true } = {}) {
   document.querySelector('#addresses')?.setAttribute('value', '');
   if (document.querySelector('#addresses')) document.querySelector('#addresses').value = '';
   const context = vm.createContext({
-    window: { addEventListener: window.addEventListener.bind(window), close: () => { closed++; }, confirm },
-    document, messenger: api, location: { search: '?token=test' }, URLSearchParams, console,
-    parseWatchlistInput, loadWatchlist, saveWatchlist
+    window: {
+      addEventListener: window.addEventListener.bind(window),
+      close: () => {
+        closed++;
+      },
+      confirm,
+    },
+    document,
+    messenger: api,
+    location: { search: '?token=test' },
+    URLSearchParams,
+    console,
+    parseWatchlistInput,
+    loadWatchlist,
+    saveWatchlist,
   });
-  const source = (await readFile(new URL(name + '.js', root), 'utf8')).replace(/^import .*;\n/gm, '');
+  const source = (await readFile(new URL(name + '.js', root), 'utf8')).replace(
+    /^import .*;\n/gm,
+    '',
+  );
   vm.runInContext(source, context, { filename: name + '.js' });
   await tick();
   return {
-    document, window, closed: () => closed,
-    event(selector, type) { document.querySelector(selector).dispatchEvent(new window.Event(type, { bubbles: true, cancelable: true })); },
-    async click(selector) { this.event(selector, 'click'); await tick(); },
-    async submit() { this.event('#add-form', 'submit'); await tick(); }
+    document,
+    window,
+    closed: () => closed,
+    event(selector, type) {
+      document
+        .querySelector(selector)
+        .dispatchEvent(new window.Event(type, { bubbles: true, cancelable: true }));
+    },
+    async click(selector) {
+      this.event(selector, 'click');
+      await tick();
+    },
+    async submit() {
+      this.event('#add-form', 'submit');
+      await tick();
+    },
   };
 }
 
 test('settings DOM: labels describe their controls and Add/Remove save immediately', async () => {
-  let watchlist = [], writes = [];
-  const p = await page('options', { storage: { local: { get: async () => ({ watchlist }), set: async data => { watchlist = data.watchlist; writes.push(data); } } } });
+  let watchlist = [],
+    writes = [];
+  const p = await page('options', {
+    storage: {
+      local: {
+        get: async () => ({ watchlist }),
+        set: async (data) => {
+          watchlist = data.watchlist;
+          writes.push(data);
+        },
+      },
+    },
+  });
   assert.equal(p.document.title, 'Owl · Settings');
   assert.equal(p.document.querySelector('h1').textContent, 'Configure your safety net.');
   assert.equal(p.document.querySelector('.page-heading .eyebrow'), null);
-  assert.equal(p.document.querySelector('.page-footer span:last-child').textContent, 'Are you sure?');
+  assert.equal(
+    p.document.querySelector('.page-footer span:last-child').textContent,
+    'Are you sure?',
+  );
   assert.equal(p.document.querySelector('.settings-help').localName, 'section');
-  assert.equal(p.document.querySelector('.settings-help h2').textContent, 'Matching, privacy, and mailing lists');
+  assert.equal(
+    p.document.querySelector('.settings-help h2').textContent,
+    'Matching, privacy, and mailing lists',
+  );
   assert.equal(p.document.querySelector('.settings-help summary'), null);
   assert.equal(p.document.querySelectorAll('.settings-help p').length, 3);
   assert.equal(p.document.querySelector('.brand-logo').textContent, '🦉');
   assert.equal(p.document.querySelector('.brand-note').textContent, 'Are you sure?');
   assert.equal(p.document.querySelector('#save'), null);
   assert.equal(p.document.querySelector('label[for=addresses]').textContent, 'Add email addresses');
-  assert.equal(p.document.querySelector('#add-form').nextElementSibling.className, 'watchlist-section');
+  assert.equal(
+    p.document.querySelector('#add-form').nextElementSibling.className,
+    'watchlist-section',
+  );
   assert.equal(p.document.querySelector('#watchlist-heading #address-count').textContent, '0');
   const input = p.document.querySelector('#addresses');
   input.value = 'Jane@Example.com; all-staff@company.com; jane@example.com';
@@ -63,7 +110,8 @@ test('settings DOM: labels describe their controls and Add/Remove save immediate
   p.event('#addresses', 'input');
   assert.equal(p.document.querySelector('#add').disabled, true);
   assert.match(p.document.querySelector('#input-error').textContent, /broken/);
-  input.value = ''; p.event('#addresses', 'input');
+  input.value = '';
+  p.event('#addresses', 'input');
   await p.click('#watchlist li button');
   assert.equal(p.document.querySelectorAll('#watchlist li').length, 1);
   assert.deepEqual(watchlist, ['jane@example.com']);
@@ -72,10 +120,16 @@ test('settings DOM: labels describe their controls and Add/Remove save immediate
 
 test('settings DOM: an underscore address can be added and saved', async () => {
   let watchlist = [];
-  const p = await page('options', { storage: { local: {
-    get: async () => ({ watchlist }),
-    set: async value => { watchlist = value.watchlist; }
-  } } });
+  const p = await page('options', {
+    storage: {
+      local: {
+        get: async () => ({ watchlist }),
+        set: async (value) => {
+          watchlist = value.watchlist;
+        },
+      },
+    },
+  });
   const input = p.document.querySelector('#addresses');
   input.value = 'laika_devs@meta.com';
   p.event('#addresses', 'input');
@@ -87,10 +141,14 @@ test('settings DOM: an underscore address can be added and saved', async () => {
 });
 
 test('settings DOM: an address without a domain suffix cannot be added or saved', async () => {
-  const p = await page('options', { storage: { local: {
-    get: async () => ({ watchlist: [] }),
-    set: async () => assert.fail('invalid address must not be saved')
-  } } });
+  const p = await page('options', {
+    storage: {
+      local: {
+        get: async () => ({ watchlist: [] }),
+        set: async () => assert.fail('invalid address must not be saved'),
+      },
+    },
+  });
   const input = p.document.querySelector('#addresses');
   input.value = 'a@email';
   p.event('#addresses', 'input');
@@ -107,7 +165,18 @@ test('settings DOM: an address without a domain suffix cannot be added or saved'
 
 test('settings DOM: failed read is not an empty, writable list', async () => {
   let writes = 0;
-  const p = await page('options', { storage: { local: { get: async () => { throw new Error('Unavailable'); }, set: async () => { writes++; } } } });
+  const p = await page('options', {
+    storage: {
+      local: {
+        get: async () => {
+          throw new Error('Unavailable');
+        },
+        set: async () => {
+          writes++;
+        },
+      },
+    },
+  });
   assert.equal(p.document.querySelector('#load-error').hidden, false);
   assert.equal(p.document.querySelector('#addresses').disabled, true);
   assert.equal(p.document.querySelector('#add').disabled, true);
@@ -115,13 +184,22 @@ test('settings DOM: failed read is not an empty, writable list', async () => {
 });
 
 test('settings DOM: failed addition retains the input and can be retried', async () => {
-  let watchlist = [], fail = true;
-  const p = await page('options', { storage: { local: {
-    get: async () => ({ watchlist }),
-    set: async data => { if (fail) throw new Error('Save unavailable'); watchlist = data.watchlist; }
-  } } });
+  let watchlist = [],
+    fail = true;
+  const p = await page('options', {
+    storage: {
+      local: {
+        get: async () => ({ watchlist }),
+        set: async (data) => {
+          if (fail) throw new Error('Save unavailable');
+          watchlist = data.watchlist;
+        },
+      },
+    },
+  });
   const input = p.document.querySelector('#addresses');
-  input.value = 'new@example.com'; p.event('#addresses', 'input');
+  input.value = 'new@example.com';
+  p.event('#addresses', 'input');
   await p.submit();
   assert.match(p.document.querySelector('#save-error').textContent, /Save unavailable/);
   assert.equal(p.document.querySelector('#save-status').textContent, 'Changes not saved');
@@ -137,10 +215,16 @@ test('settings DOM: failed addition retains the input and can be retried', async
 });
 
 test('settings DOM: failed removal leaves the saved list visible', async () => {
-  const p = await page('options', { storage: { local: {
-    get: async () => ({ watchlist: ['a@example.com'] }),
-    set: async () => { throw new Error('Save unavailable'); }
-  } } });
+  const p = await page('options', {
+    storage: {
+      local: {
+        get: async () => ({ watchlist: ['a@example.com'] }),
+        set: async () => {
+          throw new Error('Save unavailable');
+        },
+      },
+    },
+  });
   await p.click('#watchlist li button');
   assert.match(p.document.querySelector('#save-error').textContent, /Save unavailable/);
   assert.equal(p.document.querySelectorAll('#watchlist li').length, 1);
@@ -148,10 +232,28 @@ test('settings DOM: failed removal leaves the saved list visible', async () => {
 });
 
 test('settings DOM: removing the final address requires confirmation before saving', async () => {
-  let watchlist = ['a@example.com'], approved = false, confirmations = 0;
-  const p = await page('options', { storage: { local: {
-    get: async () => ({ watchlist }), set: async data => { watchlist = data.watchlist; }
-  } } }, { confirm: () => { confirmations++; return approved; } });
+  let watchlist = ['a@example.com'],
+    approved = false,
+    confirmations = 0;
+  const p = await page(
+    'options',
+    {
+      storage: {
+        local: {
+          get: async () => ({ watchlist }),
+          set: async (data) => {
+            watchlist = data.watchlist;
+          },
+        },
+      },
+    },
+    {
+      confirm: () => {
+        confirmations++;
+        return approved;
+      },
+    },
+  );
   await p.click('#watchlist li button');
   assert.deepEqual(watchlist, ['a@example.com']);
   approved = true;
@@ -163,7 +265,14 @@ test('settings DOM: removing the final address requires confirmation before savi
 
 test('settings DOM: another tab changing the list prevents a silent overwrite', async () => {
   let state = ['a@example.com'];
-  const p = await page('options', { storage: { local: { get: async () => ({ watchlist: state }), set: async () => assert.fail('must not overwrite') } } });
+  const p = await page('options', {
+    storage: {
+      local: {
+        get: async () => ({ watchlist: state }),
+        set: async () => assert.fail('must not overwrite'),
+      },
+    },
+  });
   state = ['new@example.com'];
   await p.click('#watchlist li button');
   assert.match(p.document.querySelector('#save-error').textContent, /another settings tab/);
@@ -172,13 +281,28 @@ test('settings DOM: another tab changing the list prevents a silent overwrite', 
 });
 
 test('settings DOM: saving disables mutations until the write finishes', async () => {
-  let finishWrite, writes = 0, watchlist = [];
-  const p = await page('options', { storage: { local: {
-    get: async () => ({ watchlist }),
-    set: data => { writes++; return new Promise(resolve => { finishWrite = () => { watchlist = data.watchlist; resolve(); }; }); }
-  } } });
+  let finishWrite,
+    writes = 0,
+    watchlist = [];
+  const p = await page('options', {
+    storage: {
+      local: {
+        get: async () => ({ watchlist }),
+        set: (data) => {
+          writes++;
+          return new Promise((resolve) => {
+            finishWrite = () => {
+              watchlist = data.watchlist;
+              resolve();
+            };
+          });
+        },
+      },
+    },
+  });
   const input = p.document.querySelector('#addresses');
-  input.value = 'a@example.com'; p.event('#addresses', 'input');
+  input.value = 'a@example.com';
+  p.event('#addresses', 'input');
   await p.submit();
   assert.equal(p.document.querySelector('#save-status').textContent, 'Saving…');
   assert.equal(input.disabled, true);
@@ -186,7 +310,8 @@ test('settings DOM: saving disables mutations until the write finishes', async (
   await p.submit();
   assert.equal(writes, 1);
   assert.equal(p.document.querySelectorAll('#watchlist li').length, 0);
-  finishWrite(); await tick();
+  finishWrite();
+  await tick();
   assert.equal(p.document.querySelectorAll('#watchlist li').length, 1);
   assert.equal(input.disabled, false);
 });
@@ -194,18 +319,36 @@ test('settings DOM: saving disables mutations until the write finishes', async (
 test('warning DOM: addresses are text; send requires an explicit click', async () => {
   const decisions = [];
   const malicious = '<img src=https://example.invalid/track>';
-  const p = await page('warning', { runtime: { sendMessage: async message => {
-    if (message.type === 'owl:warning') return { kind: 'match', matches: [{ field: 'bcc', address: malicious }] };
-    decisions.push(message); return { accepted: true };
-  } } });
+  const p = await page('warning', {
+    runtime: {
+      sendMessage: async (message) => {
+        if (message.type === 'owl:warning')
+          return { kind: 'match', matches: [{ field: 'bcc', address: malicious }] };
+        decisions.push(message);
+        return { accepted: true };
+      },
+    },
+  });
   assert.equal(p.document.querySelector('#warning-title').textContent, 'Are you sure?');
-  assert.equal(p.document.querySelector('#warning-description').textContent, 'You’re about to send to this watched address.');
+  assert.equal(
+    p.document.querySelector('#warning-description').textContent,
+    'You’re about to send to this watched address.',
+  );
   assert.equal(p.document.querySelector('.warning-symbol').textContent, '🦉');
   assert.equal(p.document.querySelector('.brand'), null);
   assert.equal(p.document.querySelector('.eyebrow'), null);
-  assert.equal(p.document.querySelector('[role=dialog]').getAttribute('aria-labelledby'), 'warning-title');
-  assert.equal(p.document.querySelector('.warning-notes').nextElementSibling.className, 'warning-actions');
-  assert.match(p.document.querySelector('.warning-notes').textContent, /Your decision applies only to this send attempt/);
+  assert.equal(
+    p.document.querySelector('[role=dialog]').getAttribute('aria-labelledby'),
+    'warning-title',
+  );
+  assert.equal(
+    p.document.querySelector('.warning-notes').nextElementSibling.className,
+    'warning-actions',
+  );
+  assert.match(
+    p.document.querySelector('.warning-notes').textContent,
+    /Your decision applies only to this send attempt/,
+  );
   assert.equal(p.document.querySelector('#matches').textContent, 'bcc' + malicious);
   assert.equal(p.document.querySelector('#matches img'), null);
   assert.equal(decisions.length, 0);
@@ -217,11 +360,20 @@ test('warning DOM: addresses are text; send requires an explicit click', async (
 
 test('warning DOM: failure is visibly different and Cancel sends false', async () => {
   const decisions = [];
-  const p = await page('warning', { runtime: { sendMessage: async message => {
-    if (message.type === 'owl:warning') return { kind: 'error', reason: 'Settings unavailable' };
-    decisions.push(message); return { accepted: true };
-  } } });
-  assert.equal(p.document.querySelector('#warning-title').textContent, 'Recipients could not be verified');
+  const p = await page('warning', {
+    runtime: {
+      sendMessage: async (message) => {
+        if (message.type === 'owl:warning')
+          return { kind: 'error', reason: 'Settings unavailable' };
+        decisions.push(message);
+        return { accepted: true };
+      },
+    },
+  });
+  assert.equal(
+    p.document.querySelector('#warning-title').textContent,
+    'Recipients could not be verified',
+  );
   assert.equal(p.document.querySelector('#approve').textContent, 'Send without verification');
   assert.equal(p.document.querySelector('#verification-error').hidden, false);
   await p.click('#cancel');
@@ -229,17 +381,28 @@ test('warning DOM: failure is visibly different and Cancel sends false', async (
 });
 
 test('warning DOM: failed warning load never enables sending', async () => {
-  const p = await page('warning', { runtime: { sendMessage: async () => { throw new Error('Unavailable'); } } });
+  const p = await page('warning', {
+    runtime: {
+      sendMessage: async () => {
+        throw new Error('Unavailable');
+      },
+    },
+  });
   assert.equal(p.document.querySelector('#approve').disabled, true);
   assert.equal(p.document.querySelector('#warning-title').textContent, 'No approval was given');
 });
 
 test('a genuinely stale warning cannot approve sending and keeps cancellation available', async () => {
   const address = 'sensitive@example.com';
-  const p = await page('warning', { runtime: { sendMessage: async message => {
-    if (message.type === 'owl:warning') return { kind: 'match', matches: [{ field: 'to', address }] };
-    throw new Error('This warning is no longer active. Sending was not approved.');
-  } } });
+  const p = await page('warning', {
+    runtime: {
+      sendMessage: async (message) => {
+        if (message.type === 'owl:warning')
+          return { kind: 'match', matches: [{ field: 'to', address }] };
+        throw new Error('This warning is no longer active. Sending was not approved.');
+      },
+    },
+  });
   await p.click('#cancel');
   assert.equal(p.document.querySelector('#cancel').textContent, 'Close and cancel');
   assert.equal(p.document.querySelector('#cancel').disabled, false);
